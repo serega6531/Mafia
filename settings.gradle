@@ -1,0 +1,5 @@
+rootProject.name = 'mafia'
+include 'mafia-server'
+include 'mafia-client'
+include 'mafia-common'
+

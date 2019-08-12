@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+}
+
+group ' ru.serega6531'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+apply plugin: 'base'
+
+subprojects {
+    apply plugin: 'java'
+    repositories {
+        mavenCentral()
+    }
+}

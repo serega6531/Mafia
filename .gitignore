@@ -1,0 +1,5 @@
+# Project exclude paths
+/.gradle/
+/build/
+/mafia-client/build/
+/mafia-server/build/
