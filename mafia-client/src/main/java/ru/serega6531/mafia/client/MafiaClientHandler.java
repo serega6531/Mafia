@@ -9,7 +9,7 @@ public class MafiaClientHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         final MafiaPacket packet = (MafiaPacket) msg;
-        System.out.println(packet.getName());
+        System.out.println(packet);
     }
 
     @Override

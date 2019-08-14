@@ -11,7 +11,12 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
-import ru.serega6531.mafia.packets.MafiaPacket;
+import ru.serega6531.mafia.SessionInitialParameters;
+import ru.serega6531.mafia.enums.Role;
+import ru.serega6531.mafia.packets.client.CreateLobbyPacket;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MafiaClient {
 
@@ -35,8 +40,17 @@ public class MafiaClient {
 
             ChannelFuture f = b.connect("localhost", 1111).sync();
 
-            f.channel().writeAndFlush(new MafiaPacket("Test")).sync();
-            f.channel().close();
+            Map<Role, Integer> roles = new HashMap<>();
+            roles.put(Role.MAFIA, 2);
+            roles.put(Role.CITIZEN, 3);
+
+            f.channel().writeAndFlush(
+                    new CreateLobbyPacket("Test",
+                            SessionInitialParameters.builder()
+                                    .playersCount(5)
+                                    .rolesCount(roles)
+                                    .build()));
+            Thread.sleep(5000);
         } finally {
             workerGroup.shutdownGracefully();
         }
