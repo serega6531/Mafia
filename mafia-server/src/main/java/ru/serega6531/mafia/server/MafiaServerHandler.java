@@ -7,9 +7,13 @@ import io.netty.channel.group.ChannelGroup;
 import ru.serega6531.mafia.SessionInitialParameters;
 import ru.serega6531.mafia.packets.MafiaPacket;
 import ru.serega6531.mafia.packets.client.CreateLobbyPacket;
+import ru.serega6531.mafia.packets.client.JoinLobbyPacket;
+import ru.serega6531.mafia.packets.client.StartSessionPacket;
 import ru.serega6531.mafia.packets.server.ErrorMessagePacket;
-import ru.serega6531.mafia.packets.server.LobbyCreatedPacket;
-import ru.serega6531.mafia.server.exceptions.IllegalSessionParametersException;
+import ru.serega6531.mafia.packets.server.LobbyJoinedPacket;
+import ru.serega6531.mafia.server.exceptions.IllegalSessionStateException;
+import ru.serega6531.mafia.GameLobby;
+import ru.serega6531.mafia.server.session.SessionsService;
 
 public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
 
@@ -31,10 +35,14 @@ public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
                 final SessionInitialParameters parameters = createSessionPacket.getParameters();
                 final GameLobby lobby = sessionsService.createLobby(parameters, createSessionPacket.getName());
 
-                ctx.writeAndFlush(new LobbyCreatedPacket(lobby.getId(), parameters));
-            } catch (IllegalSessionParametersException e) {
+                ctx.writeAndFlush(new LobbyJoinedPacket(lobby));
+            } catch (IllegalSessionStateException e) {
                 ctx.writeAndFlush(new ErrorMessagePacket(e.getMessage()));
             }
+        } else if(packet instanceof JoinLobbyPacket) {
+            //TODO
+        } else if(packet instanceof StartSessionPacket) {
+            //TODO
         }
     }
 
@@ -52,7 +60,7 @@ public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         cause.printStackTrace();
         ctx.channel().close();
     }

@@ -1,18 +1,16 @@
-package ru.serega6531.mafia.server;
+package ru.serega6531.mafia;
 
 import lombok.Data;
-import lombok.NonNull;
-import ru.serega6531.mafia.SessionInitialParameters;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class GameLobby {
+public class GameLobby implements Serializable {
 
     private final int id;  // станет id GameSession после начала раунда
 
-    @NonNull
     private String creator;
 
     private SessionInitialParameters parameters;
