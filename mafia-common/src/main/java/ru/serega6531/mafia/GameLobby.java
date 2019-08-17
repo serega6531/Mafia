@@ -10,12 +10,9 @@ import java.util.List;
 public class GameLobby implements Serializable {
 
     private final int id;  // станет id GameSession после начала раунда
-
     private String creator;
-
-    private SessionInitialParameters parameters;
-
-    private List<String> players;
+    private final SessionInitialParameters parameters;
+    private final List<String> players;
 
     public GameLobby(int id, String creator, SessionInitialParameters parameters) {
         this.id = id;

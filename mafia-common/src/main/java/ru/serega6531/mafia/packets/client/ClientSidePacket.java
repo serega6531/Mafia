@@ -8,7 +8,7 @@ import ru.serega6531.mafia.packets.MafiaPacket;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @AllArgsConstructor
-class ClientSidePacket extends MafiaPacket {
+public class ClientSidePacket extends MafiaPacket {
 
     private String name;
 
