@@ -7,9 +7,7 @@ import lombok.EqualsAndHashCode;
 @Data
 public class LoginPacket extends ClientSidePacket {
 
-    //TODO implement handshake
-
-    public LoginPacket(String name) {
-        super(name);
+    public LoginPacket(String name, byte[] handshakeInitial) {
+        super(name, handshakeInitial);
     }
 }

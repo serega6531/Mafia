@@ -17,12 +17,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
 
     private ChannelGroup allClients;
     private Map<String, Channel> channelsByPlayer = new HashMap<>();
+
+    private Map<String, byte[]> handshakes = new HashMap<>();
 
     private final SessionsService sessionsService = new SessionsService(this);
 
@@ -37,11 +40,28 @@ public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
         String player = packet.getName();
 
         if(packet instanceof LoginPacket) {
+            final LoginPacket loginPacket = (LoginPacket) packet;
+            final byte[] initial = loginPacket.getHandshake();
+
+            if(initial.length != 8) {
+                ctx.writeAndFlush(new ErrorMessagePacket("Неверная авторизация"));
+                return;
+            }
+
+            final ThreadLocalRandom rand = ThreadLocalRandom.current();
+            byte[] handshake = new byte[8];
+            rand.nextBytes(handshake);
+
+            for(int i = 0; i < 8; i++) {
+                handshake[i] ^= initial[i];
+            }
+
+            handshakes.put(player, handshake);
             channelsByPlayer.put(player, ctx.channel());
             return;
         }
 
-        if(!channelsByPlayer.containsKey(player)) {
+        if(!handshakes.containsKey(player) || !Arrays.equals(handshakes.get(player), packet.getHandshake())) {
             ctx.writeAndFlush(new ErrorMessagePacket("Вы не авторизированы"));
             return;
         }

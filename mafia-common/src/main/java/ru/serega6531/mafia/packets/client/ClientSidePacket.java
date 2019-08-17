@@ -11,5 +11,6 @@ import ru.serega6531.mafia.packets.MafiaPacket;
 public class ClientSidePacket extends MafiaPacket {
 
     private String name;
+    private byte[] handshake;
 
 }
