@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 @Data
 public class StartSessionPacket extends ClientSidePacket {
 
-    public StartSessionPacket(String name) {
-        super(name);
+    public StartSessionPacket(String name, byte[] handshake) {
+        super(name, handshake);
     }
 }

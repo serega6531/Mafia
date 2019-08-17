@@ -14,7 +14,7 @@ public class MafiaClientHandler extends ChannelInboundHandlerAdapter {
         System.out.println(packet);
 
         if(packet instanceof LobbyJoinedPacket) {
-            ctx.channel().writeAndFlush(new StartSessionPacket("Test"));
+            ctx.channel().writeAndFlush(new StartSessionPacket("Test", new byte[0]));
         }
     }
 

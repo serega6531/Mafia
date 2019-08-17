@@ -61,13 +61,16 @@ public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
             return;
         }
 
-        if(!handshakes.containsKey(player) || !Arrays.equals(handshakes.get(player), packet.getHandshake())) {
+        if(!channelsByPlayer.containsKey(player) || !handshakes.containsKey(player) || !Arrays.equals(handshakes.get(player), packet.getHandshake())) {
             ctx.writeAndFlush(new ErrorMessagePacket("Вы не авторизированы"));
             return;
         }
 
         try {
-            if (packet instanceof CreateLobbyPacket) {
+            if(packet instanceof LogoutPacket) {
+                handshakes.remove(player);
+                channelsByPlayer.remove(player);
+            } else if (packet instanceof CreateLobbyPacket) {
                 CreateLobbyPacket createSessionPacket = ((CreateLobbyPacket) packet);
                 final SessionInitialParameters parameters = createSessionPacket.getParameters();
                 final GameLobby lobby = sessionsService.createLobby(parameters, player);

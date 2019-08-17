@@ -11,16 +11,41 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import lombok.Getter;
 import ru.serega6531.mafia.SessionInitialParameters;
 import ru.serega6531.mafia.enums.Role;
 import ru.serega6531.mafia.packets.client.CreateLobbyPacket;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MafiaClient {
+public class MafiaClient extends Application {
 
-    public static void main(String[] args) throws InterruptedException {
+    @Getter
+    private static Stage primaryStage;
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+    @Override
+    public void start(Stage primaryStage) throws InterruptedException, IOException {
+        MafiaClient.primaryStage = primaryStage;
+        Parent root = FXMLLoader.load(getClass().getResource("/login.fxml"));
+        Scene scene = new Scene(root);
+        primaryStage.setTitle("Мафия");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+//        connect();
+    }
+
+    private void connect() throws InterruptedException {
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
         try {
@@ -46,14 +71,15 @@ public class MafiaClient {
 
             f.channel().writeAndFlush(
                     new CreateLobbyPacket("Test",
+                            new byte[0],
                             SessionInitialParameters.builder()
                                     .playersCount(5)
                                     .rolesCount(roles)
                                     .build()));
-            Thread.sleep(5000);
+
+            f.channel().closeFuture().sync();
         } finally {
             workerGroup.shutdownGracefully();
         }
     }
-
 }

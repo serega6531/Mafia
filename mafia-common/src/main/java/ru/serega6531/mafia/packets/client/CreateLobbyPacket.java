@@ -10,8 +10,8 @@ public class CreateLobbyPacket extends ClientSidePacket {
 
     private SessionInitialParameters parameters;
 
-    public CreateLobbyPacket(String name, SessionInitialParameters parameters) {
-        super(name);
+    public CreateLobbyPacket(String name, byte[] handshake, SessionInitialParameters parameters) {
+        super(name, handshake);
         this.parameters = parameters;
     }
 }

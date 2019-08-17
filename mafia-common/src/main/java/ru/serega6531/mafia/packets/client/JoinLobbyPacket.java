@@ -9,8 +9,8 @@ public class JoinLobbyPacket extends ClientSidePacket {
 
     private int lobbyId;
 
-    public JoinLobbyPacket(String name, int lobbyId) {
-        super(name);
+    public JoinLobbyPacket(String name, byte[] handshake, int lobbyId) {
+        super(name, handshake);
         this.lobbyId = lobbyId;
     }
 }

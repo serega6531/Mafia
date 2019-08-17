@@ -22,4 +22,8 @@ public class GameLobby implements Serializable {
         players = new ArrayList<>(parameters.getPlayersCount());
     }
 
+    @Override
+    public String toString() {
+        return String.format("Лобби %s на %d игроков", creator, parameters.getPlayersCount());
+    }
 }
