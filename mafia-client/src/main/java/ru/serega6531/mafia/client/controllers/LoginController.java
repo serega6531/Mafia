@@ -2,22 +2,23 @@ package ru.serega6531.mafia.client.controllers;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
-import javafx.stage.Stage;
 import ru.serega6531.mafia.client.MafiaClient;
+import ru.serega6531.mafia.packets.client.LoginPacket;
 
-import java.io.IOException;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class LoginController {
 
     @FXML
+    private Button loginButton;
+
+    @FXML
     private TextField loginEdit;
 
-    public void onLoginButtonClick(ActionEvent e) throws IOException {
+    public void onLoginButtonClick(ActionEvent e) {
         String login = loginEdit.getText();
         if(login.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -29,10 +30,11 @@ public class LoginController {
             return;
         }
 
-        Parent root = FXMLLoader.load(getClass().getResource("/lobbies.fxml"));
-        final Stage primaryStage = MafiaClient.getPrimaryStage();
-        Scene scene = new Scene(root);
-        scene.getStylesheets().add(getClass().getResource("/lobbies.css").toExternalForm());
-        primaryStage.setScene(scene);
+        ThreadLocalRandom rand = ThreadLocalRandom.current();
+        byte[] handshake = new byte[8];
+        rand.nextBytes(handshake);
+        MafiaClient.getChannel().writeAndFlush(new LoginPacket(login, handshake));
+
+        loginButton.setDisable(true);
     }
 }

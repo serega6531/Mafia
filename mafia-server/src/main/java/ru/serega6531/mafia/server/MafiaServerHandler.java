@@ -2,21 +2,17 @@ package ru.serega6531.mafia.server;
 
 import io.netty.channel.*;
 import io.netty.channel.group.ChannelGroup;
+import ru.serega6531.mafia.AuthData;
 import ru.serega6531.mafia.GameLobby;
 import ru.serega6531.mafia.SessionInitialParameters;
+import ru.serega6531.mafia.enums.LobbyUpdateType;
 import ru.serega6531.mafia.packets.client.*;
-import ru.serega6531.mafia.packets.server.ErrorMessagePacket;
-import ru.serega6531.mafia.packets.server.LobbyJoinedPacket;
-import ru.serega6531.mafia.packets.server.LobbyUpdatedPacket;
-import ru.serega6531.mafia.packets.server.SessionStartedPacket;
+import ru.serega6531.mafia.packets.server.*;
 import ru.serega6531.mafia.server.exceptions.MafiaErrorMessageException;
 import ru.serega6531.mafia.server.session.GameSession;
 import ru.serega6531.mafia.server.session.SessionsService;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
@@ -58,10 +54,13 @@ public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
 
             handshakes.put(player, handshake);
             channelsByPlayer.put(player, ctx.channel());
+
+            ctx.writeAndFlush(new LoginResponsePacket(new AuthData(player, handshake), sessionsService.getAllLobbies()));
             return;
         }
 
-        if(!channelsByPlayer.containsKey(player) || !handshakes.containsKey(player) || !Arrays.equals(handshakes.get(player), packet.getHandshake())) {
+        if(!channelsByPlayer.containsKey(player) || !handshakes.containsKey(player) ||
+                !Arrays.equals(handshakes.get(player), packet.getHandshake())) {
             ctx.writeAndFlush(new ErrorMessagePacket("Вы не авторизированы"));
             return;
         }
@@ -80,7 +79,8 @@ public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
                 final GameLobby lobby = sessionsService.joinLobby(player, ((JoinLobbyPacket) packet).getLobbyId());
 
                 if(lobby != null) {
-                    allClients.writeAndFlush(new LobbyUpdatedPacket(player, true, lobby));
+                    ctx.write(new LobbyJoinedPacket(lobby));
+                    allClients.writeAndFlush(new LobbyUpdatedPacket(LobbyUpdateType.PLAYER_JOINED, player, lobby));
                 }
             } else if (packet instanceof StartSessionPacket) {
                 final GameSession session = sessionsService.startSession(player);

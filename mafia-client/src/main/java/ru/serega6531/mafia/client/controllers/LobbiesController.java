@@ -9,6 +9,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import ru.serega6531.mafia.GameLobby;
 import ru.serega6531.mafia.SessionInitialParameters;
+import ru.serega6531.mafia.client.MafiaClient;
 import ru.serega6531.mafia.enums.Role;
 
 import java.util.HashMap;
@@ -32,8 +33,6 @@ public class LobbiesController {
     @FXML
     private Label playerNameLabel;
 
-    private ObservableList<GameLobby> observableLobbiesList;
-
     @FXML
     public void initialize() {
         // mock:
@@ -53,9 +52,10 @@ public class LobbiesController {
                         .rolesCount(roles)
                         .build());
 
-        playerNameLabel.setText("Test");
+        playerNameLabel.setText(MafiaClient.getAuthData().getName());
 
-        observableLobbiesList = FXCollections.observableArrayList(lobby1, lobby2);
+        final ObservableList<GameLobby> observableLobbiesList = MafiaClient.getObservableLobbiesList();
+        observableLobbiesList.addAll(lobby1, lobby2);
         lobbiesList.setItems(observableLobbiesList);
 
         lobbiesList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
@@ -72,6 +72,7 @@ public class LobbiesController {
     }
 
     public void onJoinClick(ActionEvent e) {
+        final GameLobby lobby = lobbiesList.getSelectionModel().getSelectedItem();
 
     }
 

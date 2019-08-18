@@ -126,13 +126,13 @@ public class SessionsService {
         GameLobby currentLobby = getLobbyByPlayer(player);
         GameSession currentSession = getSessionByPlayer(player);
 
-        if (currentLobby != null || currentSession != null) {
-            throw new MafiaErrorMessageException("Вы уже состоите в лобби");
-        }
-
         GameLobby lobby = lobbiesById.get(id);
         if (lobby == null) {
             throw new MafiaErrorMessageException("Это лобби перестало существовать");
+        }
+
+        if ((currentLobby != null && !currentLobby.equals(lobby)) || currentSession != null) {
+            throw new MafiaErrorMessageException("Вы уже состоите в лобби");
         }
 
         if (lobby.getPlayers().contains(player)) {
@@ -145,6 +145,10 @@ public class SessionsService {
         System.out.printf("[%d] Присоединился игрок %s\n", lobby.getId(), player);
 
         return lobby;
+    }
+
+    public List<GameLobby> getAllLobbies() {
+        return new ArrayList<>(lobbiesById.values());
     }
 
     public GameLobby getLobbyByCreator(String creator) {
