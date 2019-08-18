@@ -7,7 +7,7 @@ import ru.serega6531.mafia.AuthData;
 import ru.serega6531.mafia.GameLobby;
 import ru.serega6531.mafia.packets.MafiaPacket;
 
-import java.util.Collection;
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -15,6 +15,6 @@ import java.util.Collection;
 public class LoginResponsePacket extends MafiaPacket {
 
     private AuthData authData;
-    private Collection<GameLobby> lobbies;
+    private List<GameLobby> lobbies;
 
 }

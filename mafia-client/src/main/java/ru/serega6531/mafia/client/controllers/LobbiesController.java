@@ -4,16 +4,17 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.stage.Stage;
 import ru.serega6531.mafia.GameLobby;
-import ru.serega6531.mafia.SessionInitialParameters;
 import ru.serega6531.mafia.client.MafiaClient;
-import ru.serega6531.mafia.enums.Role;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
 import java.util.stream.Collectors;
 
 public class LobbiesController {
@@ -35,27 +36,9 @@ public class LobbiesController {
 
     @FXML
     public void initialize() {
-        // mock:
-        Map<Role, Integer> roles = new HashMap<>();
-        roles.put(Role.MAFIA, 2);
-        roles.put(Role.CITIZEN, 3);
-
-        final GameLobby lobby1 = new GameLobby(1, "serega6531",
-                SessionInitialParameters.builder()
-                        .playersCount(5)
-                        .rolesCount(roles)
-                        .build());
-
-        final GameLobby lobby2 = new GameLobby(2, "144th",
-                SessionInitialParameters.builder()
-                        .playersCount(5)
-                        .rolesCount(roles)
-                        .build());
-
         playerNameLabel.setText(MafiaClient.getAuthData().getName());
 
         final ObservableList<GameLobby> observableLobbiesList = MafiaClient.getObservableLobbiesList();
-        observableLobbiesList.addAll(lobby1, lobby2);
         lobbiesList.setItems(observableLobbiesList);
 
         lobbiesList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
@@ -76,7 +59,11 @@ public class LobbiesController {
 
     }
 
-    public void onCreateLobbyClick(ActionEvent e) {
+    public void onCreateLobbyClick(ActionEvent e) throws IOException {
+        Parent root = FXMLLoader.load(getClass().getResource("/creation.fxml"));
+        final Stage primaryStage = MafiaClient.getPrimaryStage();
+        Scene scene = new Scene(root);
 
+        primaryStage.setScene(scene);
     }
 }

@@ -19,8 +19,12 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.serega6531.mafia.AuthData;
 import ru.serega6531.mafia.GameLobby;
+import ru.serega6531.mafia.SessionInitialParameters;
+import ru.serega6531.mafia.enums.Role;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MafiaClient extends Application {
 
@@ -29,6 +33,26 @@ public class MafiaClient extends Application {
 
     @Getter
     private static ObservableList<GameLobby> observableLobbiesList = FXCollections.observableArrayList();
+    static {
+        // mock:
+        Map<Role, Integer> roles = new HashMap<>();
+        roles.put(Role.MAFIA, 2);
+        roles.put(Role.CITIZEN, 3);
+
+        final GameLobby lobby1 = new GameLobby(1, "serega6531",
+                SessionInitialParameters.builder()
+                        .playersCount(5)
+                        .rolesCount(roles)
+                        .build());
+
+        final GameLobby lobby2 = new GameLobby(2, "144th",
+                SessionInitialParameters.builder()
+                        .playersCount(5)
+                        .rolesCount(roles)
+                        .build());
+
+        observableLobbiesList.addAll(lobby1, lobby2);
+    }
 
     @Getter
     private static Channel channel;
@@ -36,6 +60,10 @@ public class MafiaClient extends Application {
     @Getter
     @Setter
     private static AuthData authData;
+
+    @Getter
+    @Setter
+    private static Scene lobbiesListScene;
 
     private final EventLoopGroup workerGroup = new NioEventLoopGroup();
 

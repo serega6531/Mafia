@@ -30,6 +30,7 @@ public class MafiaClientHandler extends ChannelInboundHandlerAdapter {
             final Stage primaryStage = MafiaClient.getPrimaryStage();
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/lobbies.css").toExternalForm());
+            MafiaClient.setLobbiesListScene(scene);
 
             Platform.runLater(() -> primaryStage.setScene(scene));
         } else if(packet instanceof LobbyJoinedPacket) {

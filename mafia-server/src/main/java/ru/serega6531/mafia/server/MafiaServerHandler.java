@@ -1,6 +1,8 @@
 package ru.serega6531.mafia.server;
 
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.group.ChannelGroup;
 import ru.serega6531.mafia.AuthData;
 import ru.serega6531.mafia.GameLobby;
@@ -12,7 +14,10 @@ import ru.serega6531.mafia.server.exceptions.MafiaErrorMessageException;
 import ru.serega6531.mafia.server.session.GameSession;
 import ru.serega6531.mafia.server.session.SessionsService;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
@@ -35,11 +40,11 @@ public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
         System.out.println(msg);
         String player = packet.getName();
 
-        if(packet instanceof LoginPacket) {
+        if (packet instanceof LoginPacket) {
             final LoginPacket loginPacket = (LoginPacket) packet;
             final byte[] initial = loginPacket.getHandshake();
 
-            if(initial.length != 8) {
+            if (initial.length != 8) {
                 ctx.writeAndFlush(new ErrorMessagePacket("Неверная авторизация"));
                 return;
             }
@@ -48,25 +53,26 @@ public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
             byte[] handshake = new byte[8];
             rand.nextBytes(handshake);
 
-            for(int i = 0; i < 8; i++) {
+            for (int i = 0; i < 8; i++) {
                 handshake[i] ^= initial[i];
             }
 
             handshakes.put(player, handshake);
             channelsByPlayer.put(player, ctx.channel());
 
-            ctx.writeAndFlush(new LoginResponsePacket(new AuthData(player, handshake), sessionsService.getAllLobbies()));
+            ctx.writeAndFlush(new LoginResponsePacket(new AuthData(player, handshake),
+                    sessionsService.getAllLobbies()));
             return;
         }
 
-        if(!channelsByPlayer.containsKey(player) || !handshakes.containsKey(player) ||
+        if (!channelsByPlayer.containsKey(player) || !handshakes.containsKey(player) ||
                 !Arrays.equals(handshakes.get(player), packet.getHandshake())) {
             ctx.writeAndFlush(new ErrorMessagePacket("Вы не авторизированы"));
             return;
         }
 
         try {
-            if(packet instanceof LogoutPacket) {
+            if (packet instanceof LogoutPacket) {
                 handshakes.remove(player);
                 channelsByPlayer.remove(player);
             } else if (packet instanceof CreateLobbyPacket) {
@@ -78,7 +84,7 @@ public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
             } else if (packet instanceof JoinLobbyPacket) {
                 final GameLobby lobby = sessionsService.joinLobby(player, ((JoinLobbyPacket) packet).getLobbyId());
 
-                if(lobby != null) {
+                if (lobby != null) {
                     ctx.write(new LobbyJoinedPacket(lobby));
                     allClients.writeAndFlush(new LobbyUpdatedPacket(LobbyUpdateType.PLAYER_JOINED, player, lobby));
                 }
