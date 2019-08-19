@@ -1,6 +1,7 @@
 package ru.serega6531.mafia.server;
 
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.group.ChannelGroup;
@@ -21,6 +22,7 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
+@ChannelHandler.Sharable  // нужно следить на race condition
 public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
 
     private ChannelGroup allClients;
@@ -38,11 +40,11 @@ public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         final ClientSidePacket packet = (ClientSidePacket) msg;
         System.out.println(msg);
-        String player = packet.getName();
+        final AuthData authData = packet.getAuthData();
+        String player = authData.getName();
 
         if (packet instanceof LoginPacket) {
-            final LoginPacket loginPacket = (LoginPacket) packet;
-            final byte[] initial = loginPacket.getHandshake();
+            final byte[] initial = authData.getHandshake();
 
             if (initial.length != 8) {
                 ctx.writeAndFlush(new ErrorMessagePacket("Неверная авторизация"));
@@ -66,7 +68,7 @@ public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
         }
 
         if (!channelsByPlayer.containsKey(player) || !handshakes.containsKey(player) ||
-                !Arrays.equals(handshakes.get(player), packet.getHandshake())) {
+                !Arrays.equals(handshakes.get(player), authData.getHandshake())) {
             ctx.writeAndFlush(new ErrorMessagePacket("Вы не авторизированы"));
             return;
         }

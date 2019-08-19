@@ -2,7 +2,6 @@ package ru.serega6531.mafia.client.controllers;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -54,12 +53,12 @@ public class LobbiesController {
         });
     }
 
-    public void onJoinClick(ActionEvent e) {
+    public void onJoinClick() {
         final GameLobby lobby = lobbiesList.getSelectionModel().getSelectedItem();
 
     }
 
-    public void onCreateLobbyClick(ActionEvent e) throws IOException {
+    public void onCreateLobbyClick() throws IOException {
         Parent root = FXMLLoader.load(getClass().getResource("/creation.fxml"));
         final Stage primaryStage = MafiaClient.getPrimaryStage();
         Scene scene = new Scene(root);

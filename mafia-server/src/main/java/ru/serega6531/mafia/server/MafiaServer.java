@@ -28,6 +28,7 @@ public class MafiaServer {
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
         ChannelGroup channels = new DefaultChannelGroup("all-clients", GlobalEventExecutor.INSTANCE);
+        final MafiaServerHandler serverHandler = new MafiaServerHandler(channels);
 
         try {
             ServerBootstrap b = new ServerBootstrap();
@@ -39,7 +40,7 @@ public class MafiaServer {
                             ch.pipeline()
                                     .addLast(new ObjectEncoder())
                                     .addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)))
-                                    .addLast(new MafiaServerHandler(channels));
+                                    .addLast(serverHandler);
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)

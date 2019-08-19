@@ -1,15 +1,27 @@
 package ru.serega6531.mafia.client.controllers;
 
-import javafx.event.ActionEvent;
+import io.netty.channel.Channel;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.stage.Stage;
+import ru.serega6531.mafia.SessionInitialParameters;
 import ru.serega6531.mafia.client.MafiaClient;
+import ru.serega6531.mafia.enums.Role;
+import ru.serega6531.mafia.packets.client.CreateLobbyPacket;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class LobbyCreationController {
+
+    @FXML
+    public Button cancelButton;
+
+    @FXML
+    public Button submitButton;
 
     @FXML
     private Spinner<Integer> playersSpinner;
@@ -73,12 +85,29 @@ public class LobbyCreationController {
         });
     }
 
-    public void onCancelClick(ActionEvent e) throws IOException {
+    public void onCancelClick() throws IOException {
         final Stage primaryStage = MafiaClient.getPrimaryStage();
         primaryStage.setScene(MafiaClient.getLobbiesListScene());
     }
 
-    public void onSubmitClick(ActionEvent e) {
+    public void onSubmitClick() {
+        int totalPlayers = playersSpinner.getValue();
+        int innocents = innocentsSpinner.getValue();
+        int mafia = mafiaSpinner.getValue();
 
+        Map<Role, Integer> roles = new HashMap<>();
+        roles.put(Role.MAFIA, mafia);
+        roles.put(Role.CITIZEN, innocents);
+
+        final SessionInitialParameters initialParameters = SessionInitialParameters.builder()
+                .playersCount(totalPlayers)
+                .rolesCount(roles)
+                .build();
+
+        final Channel channel = MafiaClient.getChannel();
+        channel.writeAndFlush(new CreateLobbyPacket(MafiaClient.getAuthData(), initialParameters));
+
+        submitButton.setDisable(true);
+        cancelButton.setDisable(true);
     }
 }
