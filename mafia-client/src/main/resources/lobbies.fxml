@@ -6,20 +6,35 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="433.0" prefWidth="466.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.serega6531.mafia.client.controllers.LobbiesController">
+<AnchorPane prefHeight="519.0" prefWidth="486.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.serega6531.mafia.client.controllers.LobbiesController">
    <children>
-      <Label layoutX="22.0" layoutY="11.0" text="Ник: ">
+      <Label layoutX="22.0" layoutY="11.0" text="Ник:">
          <font>
-            <Font name="System Bold" size="12.0" />
+            <Font size="14.0" />
          </font>
       </Label>
-      <Label fx:id="playerNameLabel" layoutX="55.0" layoutY="11.0" text="PLACEHOLDER" />
-      <ListView fx:id="lobbiesList" layoutX="22.0" layoutY="33.0" prefHeight="383.0" prefWidth="276.0" />
-      <Button fx:id="joinButton" disable="true" layoutX="321.0" layoutY="342.0" mnemonicParsing="false" onAction="#onJoinClick" prefHeight="32.0" prefWidth="114.0" text="Войти" />
-      <Button layoutX="321.0" layoutY="384.0" mnemonicParsing="false" onAction="#onCreateLobbyClick" prefHeight="32.0" prefWidth="114.0" text="Создать лобби" />
-      <ListView id="players-list" fx:id="playersList" disable="true" layoutX="310.0" layoutY="195.0" prefHeight="136.0" prefWidth="136.0" />
-      <Label layoutX="310.0" layoutY="173.0" text="Игроки" />
-      <ListView id="roles-list" fx:id="rolesList" disable="true" layoutX="310.0" layoutY="37.0" prefHeight="136.0" prefWidth="136.0" />
-      <Label layoutX="310.0" layoutY="15.0" text="Роли" />
+      <Label fx:id="playerNameLabel" layoutX="57.0" layoutY="11.0" text="PLACEHOLDER">
+         <font>
+            <Font size="14.0" />
+         </font></Label>
+      <ListView fx:id="lobbiesList" layoutX="22.0" layoutY="45.0" prefHeight="458.0" prefWidth="292.0" />
+      <Button fx:id="joinButton" disable="true" layoutX="341.0" layoutY="422.0" mnemonicParsing="false" onAction="#onJoinClick" prefHeight="36.0" prefWidth="122.0" text="Войти">
+         <font>
+            <Font size="14.0" />
+         </font></Button>
+      <Button layoutX="341.0" layoutY="467.0" mnemonicParsing="false" onAction="#onCreateLobbyClick" prefHeight="36.0" prefWidth="122.0" text="Создать лобби">
+         <font>
+            <Font size="14.0" />
+         </font></Button>
+      <ListView id="players-list" fx:id="playersList" disable="true" layoutX="334.0" layoutY="225.0" prefHeight="186.0" prefWidth="136.0" />
+      <Label layoutX="334.0" layoutY="199.0" text="Игроки">
+         <font>
+            <Font size="14.0" />
+         </font></Label>
+      <ListView id="roles-list" fx:id="rolesList" disable="true" layoutX="334.0" layoutY="36.0" prefHeight="163.0" prefWidth="136.0" />
+      <Label layoutX="334.0" layoutY="14.0" text="Роли">
+         <font>
+            <Font size="14.0" />
+         </font></Label>
    </children>
 </AnchorPane>
