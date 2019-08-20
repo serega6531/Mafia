@@ -21,10 +21,13 @@ import ru.serega6531.mafia.AuthData;
 import ru.serega6531.mafia.GameLobby;
 import ru.serega6531.mafia.SessionInitialParameters;
 import ru.serega6531.mafia.enums.Role;
+import ru.serega6531.mafia.packets.server.ChatMessagePacket;
+import ru.serega6531.mafia.packets.server.LobbyUpdatedPacket;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class MafiaClient extends Application {
 
@@ -64,6 +67,18 @@ public class MafiaClient extends Application {
     @Getter
     @Setter
     private static Scene lobbiesListScene;
+
+    @Getter
+    @Setter
+    private static GameLobby currentLobby;
+
+    @Getter
+    @Setter
+    private static Consumer<LobbyUpdatedPacket> lobbyUpdateConsumer;
+
+    @Getter
+    @Setter
+    private static Consumer<ChatMessagePacket> chatMessageConsumer;
 
     private final EventLoopGroup workerGroup = new NioEventLoopGroup();
 

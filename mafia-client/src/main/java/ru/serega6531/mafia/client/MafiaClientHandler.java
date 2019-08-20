@@ -26,10 +26,10 @@ public class MafiaClientHandler extends ChannelInboundHandlerAdapter {
             MafiaClient.setAuthData(authData);
             MafiaClient.getObservableLobbiesList().addAll(response.getLobbies());
 
-            Parent root = FXMLLoader.load(getClass().getResource("/lobbies.fxml"));
+            Parent root = FXMLLoader.load(getClass().getResource("/lobbiesList.fxml"));
             final Stage primaryStage = MafiaClient.getPrimaryStage();
             Scene scene = new Scene(root);
-            scene.getStylesheets().add(getClass().getResource("/lobbies.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource("/lobbiesList.css").toExternalForm());
             MafiaClient.setLobbiesListScene(scene);
 
             Platform.runLater(() -> primaryStage.setScene(scene));

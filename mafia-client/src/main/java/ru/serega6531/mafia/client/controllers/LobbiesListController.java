@@ -16,7 +16,7 @@ import ru.serega6531.mafia.client.MafiaClient;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
-public class LobbiesController {
+public class LobbiesListController {
 
     @FXML
     private ListView<String> rolesList;
