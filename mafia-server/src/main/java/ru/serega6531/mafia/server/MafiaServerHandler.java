@@ -101,6 +101,23 @@ public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
                     final Channel channel = channelsByPlayer.get(gp.getName());
                     channel.writeAndFlush(new SessionStartedPacket(gp.getNumber(), playersNames, gp.getKnownRoles()));
                 }
+            } else if (packet instanceof ClientChatMessagePacket) {
+                final String message = ((ClientChatMessagePacket) packet).getMessage();
+
+                final GameLobby lobby = sessionsService.getLobbyByPlayer(player);
+                if(lobby != null) {
+                    final ChatMessagePacket outMsg = new ChatMessagePacket(lobby.getPlayers().indexOf(player), message);
+
+                    lobby.getPlayers().stream()
+                            .map(channelsByPlayer::get)
+                            .forEach(ch -> ch.writeAndFlush(outMsg));
+                    return;
+                }
+
+                final GameSession session = sessionsService.getSessionByPlayer(player);
+                if(session != null) {
+                    //TODO
+                }
             }
         } catch (MafiaErrorMessageException e) {
             ctx.writeAndFlush(new ErrorMessagePacket(e.getMessage()));

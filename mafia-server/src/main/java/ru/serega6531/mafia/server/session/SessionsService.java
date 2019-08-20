@@ -38,6 +38,11 @@ public class SessionsService {
     }
 
     public GameLobby createLobby(SessionInitialParameters parameters, String creator) throws MafiaErrorMessageException {
+        GameLobby existing = getLobbyByPlayer(creator);
+        if(existing != null) {
+            throw new MafiaErrorMessageException("Вы уже входите в лобби");
+        }
+
         validateParameters(parameters);
 
         final GameLobby lobby = new GameLobby(idCounter.incrementAndGet(), creator, parameters);

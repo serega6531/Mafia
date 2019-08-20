@@ -8,7 +8,9 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import ru.serega6531.mafia.AuthData;
+import ru.serega6531.mafia.GameLobby;
 import ru.serega6531.mafia.packets.MafiaPacket;
+import ru.serega6531.mafia.packets.server.ChatMessagePacket;
 import ru.serega6531.mafia.packets.server.LobbyJoinedPacket;
 import ru.serega6531.mafia.packets.server.LobbyUpdatedPacket;
 import ru.serega6531.mafia.packets.server.LoginResponsePacket;
@@ -34,9 +36,18 @@ public class MafiaClientHandler extends ChannelInboundHandlerAdapter {
 
             Platform.runLater(() -> primaryStage.setScene(scene));
         } else if(packet instanceof LobbyJoinedPacket) {
-//            ctx.channel().writeAndFlush(new StartSessionPacket("Test", new byte[0]));
+            final GameLobby lobby = ((LobbyJoinedPacket) packet).getLobby();
+            MafiaClient.setCurrentLobby(lobby);
+
+            Parent root = FXMLLoader.load(getClass().getResource("/lobby.fxml"));
+            final Stage primaryStage = MafiaClient.getPrimaryStage();
+            Scene scene = new Scene(root);
+
+            Platform.runLater(() -> primaryStage.setScene(scene));
         } else if(packet instanceof LobbyUpdatedPacket) {
 
+        } else if(packet instanceof ChatMessagePacket) {
+            MafiaClient.getChatMessageConsumer().accept((ChatMessagePacket) packet);
         }
     }
 
