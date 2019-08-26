@@ -3,13 +3,11 @@ package ru.serega6531.mafia.client.controllers;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import ru.serega6531.mafia.GameLobby;
 import ru.serega6531.mafia.client.MafiaClient;
 import ru.serega6531.mafia.packets.client.ClientChatMessagePacket;
+import ru.serega6531.mafia.packets.client.StartSessionPacket;
 import ru.serega6531.mafia.packets.server.ChatMessagePacket;
 import ru.serega6531.mafia.packets.server.LobbyUpdatedPacket;
 
@@ -18,7 +16,10 @@ import java.util.stream.Collectors;
 public class LobbyController {
 
     @FXML
-    public Label rolesLabel;
+    private Label rolesLabel;
+
+    @FXML
+    private Button startButton;
 
     @FXML
     private TextArea chatTextBox;
@@ -58,23 +59,36 @@ public class LobbyController {
     }
 
     private void lobbyUpdateListener(LobbyUpdatedPacket update) {
-        if(update.getLobby().getId() == currentLobby.getId()) {
+        if (update.getLobby().getId() == currentLobby.getId()) {
             currentLobby = update.getLobby();
 
             switch (update.getType()) {
                 case PLAYER_JOINED:
                     observablePlayersList.add(update.getPlayer());
                     chatTextBox.appendText("Присоединился игрок " + update.getPlayer() + "\n");
+                    enablePlayButtonIfRequired();
                     break;
                 case PLAYER_LEFT:
                     observablePlayersList.remove(update.getPlayer());
                     chatTextBox.appendText("Вышел игрок " + update.getPlayer() + "\n");
+                    enablePlayButtonIfRequired();
                     break;
                 case LOBBY_REMOVED:
                     //TODO
                     break;
+                case CREATOR_CHANGED:
+                    chatTextBox.appendText(update.getPlayer() + " стал новым создателем лобби\n");
+                    enablePlayButtonIfRequired();
+                    break;
             }
         }
+    }
+
+    private void enablePlayButtonIfRequired() {
+        startButton.setDisable(   // включаем только если мы создатель и достаточно игроков
+                !currentLobby.getCreator().equals(MafiaClient.getAuthData().getName()) ||
+                        currentLobby.getPlayers().size() !=
+                                currentLobby.getParameters().getPlayersCount());
     }
 
     private void chatMessageListener(ChatMessagePacket packet) {
@@ -86,6 +100,6 @@ public class LobbyController {
     }
 
     public void onStartPress() {
-
+        MafiaClient.getChannel().writeAndFlush(new StartSessionPacket(MafiaClient.getAuthData()));
     }
 }

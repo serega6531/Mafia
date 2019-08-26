@@ -45,7 +45,7 @@ public class MafiaClientHandler extends ChannelInboundHandlerAdapter {
 
             Platform.runLater(() -> primaryStage.setScene(scene));
         } else if(packet instanceof LobbyUpdatedPacket) {
-
+            MafiaClient.getLobbyUpdateConsumer().accept((LobbyUpdatedPacket) packet);
         } else if(packet instanceof ChatMessagePacket) {
             MafiaClient.getChatMessageConsumer().accept((ChatMessagePacket) packet);
         }

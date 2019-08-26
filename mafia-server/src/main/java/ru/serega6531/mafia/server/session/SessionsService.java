@@ -172,6 +172,19 @@ public class SessionsService {
         return channelGroups.get(sessionId);
     }
 
+    public void removePlayer(String player) {
+        lobbiesByPlayer.remove(player);
+        sessionsByPlayer.remove(player);
+        lobbiesByCreator.remove(player);
+        sessionsByCreator.remove(player);
+    }
+
+    public void removeLobby(GameLobby lobby) {
+        lobbiesById.remove(lobby.getId());
+        lobbiesByCreator.remove(lobby.getCreator());
+        lobby.getPlayers().forEach(lobbiesByPlayer::remove);
+    }
+
     private void validateParameters(SessionInitialParameters parameters) throws MafiaErrorMessageException {
         if (parameters.getPlayersCount() < 5) {
             throw new MafiaErrorMessageException("Игроков не может быть меньше пяти");
