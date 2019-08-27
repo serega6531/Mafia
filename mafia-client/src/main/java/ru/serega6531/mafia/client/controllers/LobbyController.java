@@ -4,6 +4,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.stage.Stage;
+import lombok.SneakyThrows;
 import ru.serega6531.mafia.GameLobby;
 import ru.serega6531.mafia.client.MafiaClient;
 import ru.serega6531.mafia.packets.client.ClientChatMessagePacket;
@@ -58,6 +60,7 @@ public class LobbyController {
         MafiaClient.getChannel().writeAndFlush(new ClientChatMessagePacket(MafiaClient.getAuthData(), message));
     }
 
+    @SneakyThrows
     private void lobbyUpdateListener(LobbyUpdatedPacket update) {
         if (update.getLobby().getId() == currentLobby.getId()) {
             currentLobby = update.getLobby();
@@ -74,7 +77,8 @@ public class LobbyController {
                     enablePlayButtonIfRequired();
                     break;
                 case LOBBY_REMOVED:
-                    //TODO
+                    final Stage primaryStage = MafiaClient.getPrimaryStage();
+                    primaryStage.setScene(MafiaClient.getLobbiesListScene());
                     break;
                 case CREATOR_CHANGED:
                     chatTextBox.appendText(update.getPlayer() + " стал новым создателем лобби\n");

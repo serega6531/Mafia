@@ -5,10 +5,12 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="183.0" prefWidth="301.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.serega6531.mafia.client.controllers.LoginController">
+<AnchorPane prefHeight="220.0" prefWidth="301.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.serega6531.mafia.client.controllers.LoginController">
    <children>
-      <Label layoutX="29.0" layoutY="47.0" text="Логин:" />
-      <TextField fx:id="loginEdit" layoutX="85.0" layoutY="42.0" prefHeight="32.0" prefWidth="188.0" />
-      <Button fx:id="loginButton" layoutX="84.0" layoutY="104.0" mnemonicParsing="false" onAction="#onLoginButtonClick" prefHeight="32.0" prefWidth="134.0" text="Войти" />
+      <Label layoutX="29.0" layoutY="98.0" text="Логин:" />
+      <TextField fx:id="loginEdit" layoutX="85.0" layoutY="93.0" prefHeight="32.0" prefWidth="188.0" />
+      <Button fx:id="loginButton" layoutX="84.0" layoutY="155.0" mnemonicParsing="false" onAction="#onLoginButtonClick" prefHeight="32.0" prefWidth="134.0" text="Войти" />
+      <Label layoutX="29.0" layoutY="51.0" text="IP:" />
+      <TextField fx:id="ipEdit" layoutX="85.0" layoutY="46.0" prefHeight="32.0" prefWidth="188.0" text="localhost" />
    </children>
 </AnchorPane>

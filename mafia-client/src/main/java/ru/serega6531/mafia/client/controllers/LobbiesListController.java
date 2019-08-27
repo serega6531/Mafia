@@ -41,7 +41,7 @@ public class LobbiesListController {
         lobbiesList.setItems(observableLobbiesList);
 
         lobbiesList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            joinButton.setDisable(false);
+            joinButton.setDisable(newValue.getPlayers().size() == newValue.getParameters().getPlayersCount());
 
             rolesList.setItems(FXCollections.observableArrayList(
                     newValue.getParameters().getRolesCount().entrySet()

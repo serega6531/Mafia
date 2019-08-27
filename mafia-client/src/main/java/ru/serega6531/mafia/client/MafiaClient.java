@@ -76,7 +76,7 @@ public class MafiaClient extends Application {
     @Setter
     private static Consumer<ChatMessagePacket> chatMessageConsumer;
 
-    private final EventLoopGroup workerGroup = new NioEventLoopGroup();
+    private static final EventLoopGroup workerGroup = new NioEventLoopGroup();
 
     public static void main(String[] args) {
         launch(args);
@@ -85,8 +85,6 @@ public class MafiaClient extends Application {
     @Override
     public void start(Stage primaryStage) throws InterruptedException, IOException {
         MafiaClient.primaryStage = primaryStage;
-
-        connect();
 
         Parent root = FXMLLoader.load(getClass().getResource("/login.fxml"));
         Scene scene = new Scene(root);
@@ -100,7 +98,7 @@ public class MafiaClient extends Application {
         workerGroup.shutdownGracefully();
     }
 
-    private void connect() throws InterruptedException {
+    public static void connect(String ip) throws InterruptedException {
         Bootstrap b = new Bootstrap();
         b.group(workerGroup);
         b.channel(NioSocketChannel.class);
@@ -115,7 +113,7 @@ public class MafiaClient extends Application {
             }
         });
 
-        ChannelFuture f = b.connect("localhost", 1111).sync();
+        ChannelFuture f = b.connect(ip, 1111).sync();
         channel = f.channel();
 
 //        f.channel().closeFuture().sync();

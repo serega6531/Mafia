@@ -16,9 +16,12 @@ public class LoginController {
     private Button loginButton;
 
     @FXML
+    private TextField ipEdit;
+
+    @FXML
     private TextField loginEdit;
 
-    public void onLoginButtonClick() {
+    public void onLoginButtonClick() throws InterruptedException {
         String login = loginEdit.getText();
         if(login.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -30,11 +33,26 @@ public class LoginController {
             return;
         }
 
+        loginButton.setDisable(true);
+
+        try {
+            MafiaClient.connect(ipEdit.getText());
+        } catch (Exception e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Ошибка");
+            alert.setHeaderText("Ошибка");
+            alert.setContentText(e.getLocalizedMessage());
+
+            alert.showAndWait();
+            loginButton.setDisable(false);
+            return;
+        }
+
         ThreadLocalRandom rand = ThreadLocalRandom.current();
         byte[] handshake = new byte[8];
         rand.nextBytes(handshake);
         MafiaClient.getChannel().writeAndFlush(new LoginPacket(new AuthData(login, handshake)));
-
-        loginButton.setDisable(true);
     }
+
+
 }
