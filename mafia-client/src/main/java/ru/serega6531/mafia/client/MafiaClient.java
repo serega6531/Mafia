@@ -118,18 +118,6 @@ public class MafiaClient extends Application {
         ChannelFuture f = b.connect("localhost", 1111).sync();
         channel = f.channel();
 
-//            Map<Role, Integer> roles = new HashMap<>();
-//            roles.put(Role.MAFIA, 2);
-//            roles.put(Role.CITIZEN, 3);
-//
-//            f.channel().writeAndFlush(
-//                    new CreateLobbyPacket("Test",
-//                            new byte[0],
-//                            SessionInitialParameters.builder()
-//                                    .playersCount(5)
-//                                    .rolesCount(roles)
-//                                    .build()));
-//
 //        f.channel().closeFuture().sync();
     }
 }
