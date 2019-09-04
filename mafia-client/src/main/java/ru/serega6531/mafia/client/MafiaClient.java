@@ -19,6 +19,7 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.serega6531.mafia.AuthData;
 import ru.serega6531.mafia.GameLobby;
+import ru.serega6531.mafia.packets.client.LogoutPacket;
 import ru.serega6531.mafia.packets.server.ChatMessagePacket;
 import ru.serega6531.mafia.packets.server.LobbyUpdatedPacket;
 
@@ -95,6 +96,9 @@ public class MafiaClient extends Application {
 
     @Override
     public void stop() {
+        if(authData != null) {
+            channel.writeAndFlush(new LogoutPacket(authData));
+        }
         workerGroup.shutdownGracefully();
     }
 

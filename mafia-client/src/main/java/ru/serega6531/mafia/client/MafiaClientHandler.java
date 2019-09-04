@@ -18,6 +18,7 @@ import ru.serega6531.mafia.packets.server.LobbyUpdatedPacket;
 import ru.serega6531.mafia.packets.server.LoginResponsePacket;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class MafiaClientHandler extends ChannelInboundHandlerAdapter {
 
@@ -67,9 +68,15 @@ public class MafiaClientHandler extends ChannelInboundHandlerAdapter {
                     l.getPlayers().addAll(lobby.getPlayers());
                 });
             }
-            MafiaClient.getLobbyUpdateConsumer().accept(update);
+            Consumer<LobbyUpdatedPacket> listener = MafiaClient.getLobbyUpdateConsumer();
+            if(listener != null) {
+                listener.accept(update);
+            }
         } else if (packet instanceof ChatMessagePacket) {
-            MafiaClient.getChatMessageConsumer().accept((ChatMessagePacket) packet);
+            Consumer<ChatMessagePacket> listener = MafiaClient.getChatMessageConsumer();
+            if(listener != null) {
+                listener.accept((ChatMessagePacket) packet);
+            }
         }
     }
 

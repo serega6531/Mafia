@@ -40,12 +40,20 @@ public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
+        if(!(msg instanceof ClientSidePacket)) {
+            return;
+        }
+
         final ClientSidePacket packet = (ClientSidePacket) msg;
         System.out.println(msg);
         final AuthData authData = packet.getAuthData();
         String player = authData.getName();
 
         if (packet instanceof LoginPacket) {
+            if(channelsForPlayers.containsKey(player)) {
+                ctx.writeAndFlush(new ErrorMessagePacket("Такой игрок уже есть на сервере"));
+            }
+
             final byte[] initial = authData.getHandshake();
 
             if (initial.length != 8) {
@@ -80,7 +88,7 @@ public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
                 final GameLobby lobby = sessionsService.getLobbyByPlayer(player);
                 final GameSession session = sessionsService.getSessionByPlayer(player);
 
-                sessionsService.removePlayer(player);
+                sessionsService.removePlayer(player, ctx.channel());
 
                 if (lobby != null) {
                     final ChannelGroup group = sessionsService.getChannelGroup(lobby.getId());
@@ -111,11 +119,12 @@ public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
             } else if (packet instanceof CreateLobbyPacket) {
                 CreateLobbyPacket createSessionPacket = ((CreateLobbyPacket) packet);
                 final SessionInitialParameters parameters = createSessionPacket.getParameters();
-                final GameLobby lobby = sessionsService.createLobby(parameters, player);
+                final GameLobby lobby = sessionsService.createLobby(parameters, player, ctx.channel());
 
-                ctx.writeAndFlush(new LobbyJoinedPacket(lobby));
+                ctx.write(new LobbyJoinedPacket(lobby));
+                allClients.writeAndFlush(new LobbyUpdatedPacket(LobbyUpdateType.LOBBY_CREATED, null, lobby));
             } else if (packet instanceof JoinLobbyPacket) {
-                final GameLobby lobby = sessionsService.joinLobby(player, ((JoinLobbyPacket) packet).getLobbyId());
+                final GameLobby lobby = sessionsService.joinLobby(player, ((JoinLobbyPacket) packet).getLobbyId(), ctx.channel());
 
                 if (lobby != null) {
                     ctx.write(new LobbyJoinedPacket(lobby));
@@ -137,10 +146,7 @@ public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
                 final GameLobby lobby = sessionsService.getLobbyByPlayer(player);
                 if (lobby != null) {
                     final ChatMessagePacket outMsg = new ChatMessagePacket(lobby.getPlayers().indexOf(player), message);
-
-                    lobby.getPlayers().stream()
-                            .map(channelsForPlayers::get)
-                            .forEach(ch -> ch.writeAndFlush(outMsg));
+                    sessionsService.getChannelGroup(lobby.getId()).writeAndFlush(outMsg);
                     return;
                 }
 

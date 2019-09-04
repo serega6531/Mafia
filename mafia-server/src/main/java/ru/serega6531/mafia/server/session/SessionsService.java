@@ -1,5 +1,6 @@
 package ru.serega6531.mafia.server.session;
 
+import io.netty.channel.Channel;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
@@ -37,7 +38,7 @@ public class SessionsService {
         this.serverHandler = serverHandler;
     }
 
-    public GameLobby createLobby(SessionInitialParameters parameters, String creator) throws MafiaErrorMessageException {
+    public GameLobby createLobby(SessionInitialParameters parameters, String creator, Channel channel) throws MafiaErrorMessageException {
         GameLobby existing = getLobbyByPlayer(creator);
         if(existing != null) {
             throw new MafiaErrorMessageException("Вы уже входите в лобби");
@@ -58,7 +59,9 @@ public class SessionsService {
         lobbiesByPlayer.put(creator, lobby);
         lobbiesById.put(lobby.getId(), lobby);
         lobbiesByCreator.put(creator, lobby);
-        channelGroups.put(lobby.getId(), new DefaultChannelGroup("session-" + lobby.getId(), GlobalEventExecutor.INSTANCE));
+        DefaultChannelGroup group = new DefaultChannelGroup("session-" + lobby.getId(), GlobalEventExecutor.INSTANCE);
+        group.add(channel);
+        channelGroups.put(lobby.getId(), group);
 
         return lobby;
     }
@@ -127,7 +130,7 @@ public class SessionsService {
         return session;
     }
 
-    public GameLobby joinLobby(String player, int id) throws MafiaErrorMessageException {
+    public GameLobby joinLobby(String player, int id, Channel channel) throws MafiaErrorMessageException {
         GameLobby currentLobby = getLobbyByPlayer(player);
         GameSession currentSession = getSessionByPlayer(player);
 
@@ -146,6 +149,7 @@ public class SessionsService {
 
         lobbiesByPlayer.put(player, lobby);
         lobby.getPlayers().add(player);
+        channelGroups.get(id).add(channel);
 
         System.out.printf("[%d] Присоединился игрок %s\n", lobby.getId(), player);
 
@@ -172,14 +176,21 @@ public class SessionsService {
         return channelGroups.get(sessionId);
     }
 
-    public void removePlayer(String player) {
-        lobbiesByPlayer.remove(player);
-        sessionsByPlayer.remove(player);
+    public void removePlayer(String player, Channel channel) {
+        GameLobby lobby = lobbiesByPlayer.remove(player);
+        GameSession session = sessionsByPlayer.remove(player);
         lobbiesByCreator.remove(player);
         sessionsByCreator.remove(player);
+
+        if(lobby != null) {
+            channelGroups.get(lobby.getId()).remove(channel);
+        } else if(session != null) {
+            channelGroups.get(session.getId()).remove(channel);
+        }
     }
 
     public void removeLobby(GameLobby lobby) {
+        channelGroups.remove(lobby.getId());
         lobbiesById.remove(lobby.getId());
         lobbiesByCreator.remove(lobby.getCreator());
         lobby.getPlayers().forEach(lobbiesByPlayer::remove);
