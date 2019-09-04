@@ -83,7 +83,7 @@ public class MafiaClient extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) throws InterruptedException, IOException {
+    public void start(Stage primaryStage) throws IOException {
         MafiaClient.primaryStage = primaryStage;
 
         Parent root = FXMLLoader.load(getClass().getResource("/login.fxml"));

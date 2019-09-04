@@ -39,9 +39,9 @@ public class LobbyCreationController {
         playersSpinner.setValueFactory(
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(3, 11, 5));
         innocentsSpinner.setValueFactory(
-                new SpinnerValueFactory.IntegerSpinnerValueFactory(2, 4, 4));
+                new SpinnerValueFactory.IntegerSpinnerValueFactory(3, 4, 4));
         mafiaSpinner.setValueFactory(
-                new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 4, 1));
+                new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 2, 1));
 
         playersSpinner.valueProperty().addListener((observable, oldValue, newValue) -> {
             int maxMafia = newValue / 2 - (newValue % 2 == 0 ? 1 : 0);

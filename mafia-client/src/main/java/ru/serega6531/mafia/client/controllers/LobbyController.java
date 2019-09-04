@@ -1,5 +1,6 @@
 package ru.serega6531.mafia.client.controllers;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -67,22 +68,30 @@ public class LobbyController {
 
             switch (update.getType()) {
                 case PLAYER_JOINED:
-                    observablePlayersList.add(update.getPlayer());
-                    chatTextBox.appendText("Присоединился игрок " + update.getPlayer() + "\n");
-                    enablePlayButtonIfRequired();
+                    if(!update.getPlayer().equals(MafiaClient.getAuthData().getName())) {
+                        Platform.runLater(() -> {
+                            observablePlayersList.add(update.getPlayer());
+                            chatTextBox.appendText("Присоединился игрок " + update.getPlayer() + "\n");
+                            enablePlayButtonIfRequired();
+                        });
+                    }
                     break;
                 case PLAYER_LEFT:
-                    observablePlayersList.remove(update.getPlayer());
-                    chatTextBox.appendText("Вышел игрок " + update.getPlayer() + "\n");
-                    enablePlayButtonIfRequired();
+                    Platform.runLater(() -> {
+                        observablePlayersList.remove(update.getPlayer());
+                        chatTextBox.appendText("Вышел игрок " + update.getPlayer() + "\n");
+                        enablePlayButtonIfRequired();
+                    });
                     break;
                 case LOBBY_REMOVED:
                     final Stage primaryStage = MafiaClient.getPrimaryStage();
                     primaryStage.setScene(MafiaClient.getLobbiesListScene());
                     break;
                 case CREATOR_CHANGED:
-                    chatTextBox.appendText(update.getPlayer() + " стал новым создателем лобби\n");
-                    enablePlayButtonIfRequired();
+                    Platform.runLater(() -> {
+                        chatTextBox.appendText(update.getPlayer() + " стал новым создателем лобби\n");
+                        enablePlayButtonIfRequired();
+                    });
                     break;
             }
         }

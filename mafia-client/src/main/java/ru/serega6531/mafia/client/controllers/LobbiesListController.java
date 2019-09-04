@@ -12,6 +12,7 @@ import javafx.scene.control.ListView;
 import javafx.stage.Stage;
 import ru.serega6531.mafia.GameLobby;
 import ru.serega6531.mafia.client.MafiaClient;
+import ru.serega6531.mafia.packets.client.JoinLobbyPacket;
 
 import java.io.IOException;
 import java.util.stream.Collectors;
@@ -55,7 +56,7 @@ public class LobbiesListController {
 
     public void onJoinClick() {
         final GameLobby lobby = lobbiesList.getSelectionModel().getSelectedItem();
-
+        MafiaClient.getChannel().writeAndFlush(new JoinLobbyPacket(MafiaClient.getAuthData(), lobby.getId()));
     }
 
     public void onCreateLobbyClick() throws IOException {
