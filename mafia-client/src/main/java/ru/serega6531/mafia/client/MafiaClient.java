@@ -71,6 +71,10 @@ public class MafiaClient extends Application {
 
     @Getter
     @Setter
+    private static LocalSession currentSession;
+
+    @Getter
+    @Setter
     private static Consumer<LobbyUpdatedPacket> lobbyUpdateConsumer;
 
     @Getter

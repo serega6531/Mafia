@@ -12,10 +12,7 @@ import ru.serega6531.mafia.AuthData;
 import ru.serega6531.mafia.GameLobby;
 import ru.serega6531.mafia.enums.LobbyUpdateType;
 import ru.serega6531.mafia.packets.MafiaPacket;
-import ru.serega6531.mafia.packets.server.ChatMessagePacket;
-import ru.serega6531.mafia.packets.server.LobbyJoinedPacket;
-import ru.serega6531.mafia.packets.server.LobbyUpdatedPacket;
-import ru.serega6531.mafia.packets.server.LoginResponsePacket;
+import ru.serega6531.mafia.packets.server.*;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -69,13 +66,31 @@ public class MafiaClientHandler extends ChannelInboundHandlerAdapter {
                 });
             }
             Consumer<LobbyUpdatedPacket> listener = MafiaClient.getLobbyUpdateConsumer();
-            if(listener != null) {
+            if (listener != null) {
                 listener.accept(update);
             }
         } else if (packet instanceof ChatMessagePacket) {
             Consumer<ChatMessagePacket> listener = MafiaClient.getChatMessageConsumer();
-            if(listener != null) {
+            if (listener != null) {
                 listener.accept((ChatMessagePacket) packet);
+            }
+        } else if (packet instanceof SessionStartedPacket) {
+            SessionStartedPacket startedPacket = (SessionStartedPacket) packet;
+            if(MafiaClient.getCurrentLobby() != null &&
+                    startedPacket.getSessionId() == MafiaClient.getCurrentLobby().getId()) {
+                MafiaClient.setCurrentLobby(null);
+                MafiaClient.setCurrentSession(new LocalSession(
+                        startedPacket.getSessionId(),
+                        startedPacket.getParameters(),
+                        startedPacket.getPlayerNumber(),
+                        startedPacket.getPlayers(),
+                        startedPacket.getKnownRoles()));
+
+                Parent root = FXMLLoader.load(getClass().getResource("/game.fxml"));
+                final Stage primaryStage = MafiaClient.getPrimaryStage();
+                Scene scene = new Scene(root);
+
+                Platform.runLater(() -> primaryStage.setScene(scene));
             }
         }
     }

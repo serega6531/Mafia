@@ -40,7 +40,7 @@ public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        if(!(msg instanceof ClientSidePacket)) {
+        if (!(msg instanceof ClientSidePacket)) {
             return;
         }
 
@@ -50,7 +50,7 @@ public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
         String player = authData.getName();
 
         if (packet instanceof LoginPacket) {
-            if(channelsForPlayers.containsKey(player)) {
+            if (channelsForPlayers.containsKey(player)) {
                 ctx.writeAndFlush(new ErrorMessagePacket("Такой игрок уже есть на сервере"));
             }
 
@@ -94,7 +94,7 @@ public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
                     final ChannelGroup group = sessionsService.getChannelGroup(lobby.getId());
                     lobby.getPlayers().remove(player);
 
-                    if(lobby.getPlayers().size() > 0) {
+                    if (lobby.getPlayers().size() > 0) {
                         if (lobby.getCreator().equals(player)) {
                             lobby.setCreator(lobby.getPlayers().get(0));
 
@@ -138,7 +138,13 @@ public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
                         .collect(Collectors.toList());
 
                 for (GamePlayer gp : session.getPlayers()) {
-                    sessionsService.getChannelGroup(session.getId()).writeAndFlush(new SessionStartedPacket(gp.getNumber(), playersNames, gp.getKnownRoles()));
+                    final Channel channel = channelsForPlayers.get(gp.getName());
+                    channel.writeAndFlush(new SessionStartedPacket(
+                            session.getId(),
+                            session.getParameters(),
+                            gp.getNumber(),
+                            playersNames,
+                            gp.getKnownRoles()));
                 }
             } else if (packet instanceof ClientChatMessagePacket) {
                 final String message = ((ClientChatMessagePacket) packet).getMessage();

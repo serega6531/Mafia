@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import ru.serega6531.mafia.RoleInfo;
+import ru.serega6531.mafia.SessionInitialParameters;
 import ru.serega6531.mafia.packets.MafiaPacket;
 
 import java.util.List;
@@ -18,8 +19,10 @@ import java.util.List;
 @AllArgsConstructor
 public class SessionStartedPacket extends MafiaPacket {
 
-    private int number;
-    private List<String> players;
-    private List<RoleInfo> knownRoles;
+    private final int sessionId;
+    private final SessionInitialParameters parameters;
+    private final int playerNumber;
+    private final List<String> players;
+    private final List<RoleInfo> knownRoles;
 
 }
