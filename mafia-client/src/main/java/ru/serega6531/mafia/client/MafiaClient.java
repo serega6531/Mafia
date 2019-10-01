@@ -19,11 +19,17 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.serega6531.mafia.AuthData;
 import ru.serega6531.mafia.GameLobby;
+import ru.serega6531.mafia.RoleInfo;
+import ru.serega6531.mafia.SessionInitialParameters;
+import ru.serega6531.mafia.enums.Role;
 import ru.serega6531.mafia.packets.client.LogoutPacket;
 import ru.serega6531.mafia.packets.server.ChatMessagePacket;
 import ru.serega6531.mafia.packets.server.LobbyUpdatedPacket;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class MafiaClient extends Application {
@@ -33,26 +39,6 @@ public class MafiaClient extends Application {
 
     @Getter
     private static ObservableList<GameLobby> observableLobbiesList = FXCollections.observableArrayList();
-    /*static {
-        // mock:
-        Map<Role, Integer> roles = new HashMap<>();
-        roles.put(Role.MAFIA, 2);
-        roles.put(Role.CITIZEN, 3);
-
-        final GameLobby lobby1 = new GameLobby(1, "serega6531",
-                SessionInitialParameters.builder()
-                        .playersCount(5)
-                        .rolesCount(roles)
-                        .build());
-
-        final GameLobby lobby2 = new GameLobby(2, "144th",
-                SessionInitialParameters.builder()
-                        .playersCount(5)
-                        .rolesCount(roles)
-                        .build());
-
-        observableLobbiesList.addAll(lobby1, lobby2);
-    }*/
 
     @Getter
     private static Channel channel;
@@ -91,7 +77,29 @@ public class MafiaClient extends Application {
     public void start(Stage primaryStage) throws IOException {
         MafiaClient.primaryStage = primaryStage;
 
-        Parent root = FXMLLoader.load(getClass().getResource("/login.fxml"));
+//        Parent root = FXMLLoader.load(getClass().getResource("/login.fxml"));
+
+        //Testing:
+        authData = new AuthData("serega6531", new byte[0]);
+
+        Map<Role, Integer> roles = new HashMap<>();
+        roles.put(Role.MAFIA, 2);
+        roles.put(Role.CITIZEN, 3);
+
+        final SessionInitialParameters parameters = SessionInitialParameters.builder()
+                .playersCount(5)
+                .rolesCount(roles)
+                .build();
+
+        currentSession = new LocalSession(1, parameters, 0,
+                Arrays.asList("serega6531", "test1", "test2", "test3", "test4"),
+                Arrays.asList(
+                        new RoleInfo(0, Role.MAFIA),
+                        new RoleInfo(2, Role.MAFIA),
+                        new RoleInfo(3, Role.CITIZEN)));
+        Parent root = FXMLLoader.load(getClass().getResource("/game.fxml"));
+        //End testing
+
         Scene scene = new Scene(root);
         primaryStage.setTitle("Мафия");
         primaryStage.setScene(scene);
@@ -100,7 +108,7 @@ public class MafiaClient extends Application {
 
     @Override
     public void stop() {
-        if(authData != null) {
+        if (authData != null) {
             channel.writeAndFlush(new LogoutPacket(authData));
         }
         workerGroup.shutdownGracefully();

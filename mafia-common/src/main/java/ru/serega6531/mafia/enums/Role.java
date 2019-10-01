@@ -2,7 +2,8 @@ package ru.serega6531.mafia.enums;
 
 public enum Role {
 
-    CITIZEN("Мирный житель", Team.INNOCENTS),
+    UNKNOWN("Неизвестно", Team.INNOCENTS),  // используется только на клиенте
+    CITIZEN("Мирный", Team.INNOCENTS),
     MAFIA("Мафия", Team.MAFIA);
 
     private String roleName;

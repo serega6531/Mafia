@@ -54,7 +54,7 @@ public class GameController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/playerBox.fxml"));
 
             final PlayerBoxController controller = new PlayerBoxController(playerName, i, isCurrentPlayer);
-            controller.setKnownRole(roles.get(i));
+            controller.setKnownRole(roles.getOrDefault(i, Role.UNKNOWN));
 
             loader.setController(controller);
             Pane playerBox = loader.load();

@@ -23,6 +23,9 @@ public class PlayerBoxController {
     private Label playerNameLabel;
 
     @FXML
+    private Label playerRoleLabel;
+
+    @FXML
     private ImageView roleImage;
 
     public PlayerBoxController(String playerName, int playerNumber, boolean isCurrentPlayer) {
@@ -38,8 +41,9 @@ public class PlayerBoxController {
 
     public void setKnownRole(Role knownRole) {
         this.knownRole = knownRole;
-        if (knownRole != null) {
-            Platform.runLater(() -> roleImage.setImage(new Image("/roles/" + knownRole.name().toLowerCase() + ".png")));
-        }
+        Platform.runLater(() -> {
+            roleImage.setImage(new Image("/roles/" + knownRole.name().toLowerCase() + ".png"));
+            playerRoleLabel.setText("Роль: " + knownRole.getRoleName());
+        });
     }
 }
