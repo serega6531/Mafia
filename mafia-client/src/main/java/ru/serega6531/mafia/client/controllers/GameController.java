@@ -3,7 +3,6 @@ package ru.serega6531.mafia.client.controllers;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -26,9 +25,6 @@ public class GameController {
     
     @FXML
     private Pane playersPane;
-
-    @FXML
-    private Button sendButton;
 
     @FXML
     private TextArea chatTextBox;

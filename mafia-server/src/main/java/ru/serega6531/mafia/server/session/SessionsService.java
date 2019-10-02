@@ -110,7 +110,8 @@ public class SessionsService {
             }
         }
 
-        GameSession session = new GameSession(lobby.getId(), lobby.getCreator(), lobby.getParameters(), gamePlayers.toArray(new GamePlayer[0]));
+        final ChannelGroup channelGroup = channelGroups.get(lobby.getId());
+        GameSession session = new GameSession(lobby.getId(), channelGroup, lobby.getCreator(), lobby.getParameters(), gamePlayers.toArray(new GamePlayer[0]));
 
         System.out.printf("[%d] Игра началась: %s\n", session.getId(),
                 gamePlayers.stream()
