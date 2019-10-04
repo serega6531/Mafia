@@ -6,19 +6,17 @@ import ru.serega6531.mafia.SessionInitialParameters;
 import ru.serega6531.mafia.enums.Team;
 import ru.serega6531.mafia.packets.server.CountdownPacket;
 import ru.serega6531.mafia.packets.server.InformationMessagePacket;
+import ru.serega6531.mafia.packets.server.PlayerDiedPacket;
 import ru.serega6531.mafia.packets.server.StageChangePacket;
 import ru.serega6531.mafia.server.GamePlayer;
 import ru.serega6531.mafia.server.GameStageList;
-import ru.serega6531.mafia.stages.DayVoteStage;
-import ru.serega6531.mafia.stages.GameStage;
-import ru.serega6531.mafia.stages.InitialDiscussionStage;
-import ru.serega6531.mafia.stages.MafiaVoteStage;
+import ru.serega6531.mafia.stages.*;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Getter
-public class GameSession extends TimerTask  {
+public class GameSession extends TimerTask {
 
     private final int id;
     private final ChannelGroup allPlayersChannelGroup;
@@ -30,6 +28,8 @@ public class GameSession extends TimerTask  {
     private final Timer timer;
 
     private int stageTimeLeft = 0;
+
+    private Integer playerToKillAtNight = null;
 
     public GameSession(int id, ChannelGroup allPlayersChannelGroup, String creator,
                        SessionInitialParameters parameters, GamePlayer[] players) {
@@ -61,9 +61,9 @@ public class GameSession extends TimerTask  {
         if (stageTimeLeft == 0) {
             final GameStage prevStage = stages.getCurrentStage();
 
-            if(prevStage instanceof DayVoteStage) {
+            if (prevStage instanceof DayVoteStage) {
                 processDayVotes(((DayVoteStage) prevStage).getVotes());
-            } else if(prevStage instanceof MafiaVoteStage) {
+            } else if (prevStage instanceof MafiaVoteStage) {
                 processMafiaVotes(((MafiaVoteStage) prevStage).getVotes());
             }
 
@@ -73,13 +73,22 @@ public class GameSession extends TimerTask  {
             getAllPlayersChannelGroup().writeAndFlush(
                     new StageChangePacket(nextStage));
 
-            if(nextStage.messageAtStart() != null) {
+            if (nextStage.messageAtStart() != null) {
                 allPlayersChannelGroup.writeAndFlush(
                         new InformationMessagePacket(nextStage.messageAtStart()));
             }
 
             if (nextStage.isOneOff()) {
                 stages.remove(nextStage.getClass());
+            }
+
+            if(nextStage instanceof DayDiscussionStage && playerToKillAtNight != null) {
+                final GamePlayer killed = players[playerToKillAtNight];
+                allPlayersChannelGroup.write(new InformationMessagePacket(
+                        "Этой ночью погиб " + killed.getVisibleName()));
+                allPlayersChannelGroup.writeAndFlush(new PlayerDiedPacket(playerToKillAtNight));
+                killed.setAlive(false);
+                killed.getChannel().writeAndFlush(new InformationMessagePacket("Вас убили и вы выбыли из игры"));
             }
         }
 
@@ -95,13 +104,13 @@ public class GameSession extends TimerTask  {
         }
 
         final int alivePlayers = countAlivePlayers();
-        if(votesOfPlayers.size() < alivePlayers) {
+        if (votesOfPlayers.size() < alivePlayers) {
             votesForPlayers[findLastAlivePlayerIndex()] += alivePlayers - votesOfPlayers.size();
         }
 
         List<Integer> mostVoted = findMostVoted(votesForPlayers);
 
-        if(mostVoted.size() == 1) {
+        if (mostVoted.size() == 1) {
             jail(mostVoted.get(0));
         } else {  // несколько кандидатов с одинаковым количеством голосов
             //TODO стадия оправдывания или посадки всех
@@ -115,14 +124,14 @@ public class GameSession extends TimerTask  {
         }
 
         for (int i = 0; i < players.length; i++) {
-            if(players[i].getTeam() == Team.MAFIA && !votesOfPlayers.containsKey(players[i].getName())) {
+            if (players[i].getTeam() == Team.MAFIA && !votesOfPlayers.containsKey(players[i].getName())) {
                 votesForPlayers[i]++;   // не проголосовавшие мафии автоматически голосуют против себя
             }
         }
 
         List<Integer> mostVoted = findMostVoted(votesForPlayers);
 
-        if(mostVoted.size() == 1) {
+        if (mostVoted.size() == 1) {
             kill(mostVoted.get(0));
         } else {  // несколько кандидатов с одинаковым количеством голосов
             kill(mostVoted.get(ThreadLocalRandom.current().nextInt(mostVoted.size())));
@@ -130,11 +139,48 @@ public class GameSession extends TimerTask  {
     }
 
     private void jail(int playerIndex) {
+        GamePlayer player = players[playerIndex];
+        player.setAlive(false);
+        player.getChannel().writeAndFlush(new InformationMessagePacket("Вас посадили и вы выбыли из игры"));
+        allPlayersChannelGroup.writeAndFlush(new InformationMessagePacket("Посажен " + player.getVisibleName()));
 
+        if(player.getTeam() != Team.MAFIA && checkForMafiaWin()) {
+            allPlayersChannelGroup.writeAndFlush(new InformationMessagePacket("Победа мафии (TODO)"));
+        } else if(player.getTeam() == Team.MAFIA && checkForInnocentsWin()) {
+            allPlayersChannelGroup.writeAndFlush(new InformationMessagePacket("Победа мирных (TODO)"));
+        }
     }
 
     private void kill(int playerIndex) {
+        playerToKillAtNight = playerIndex;
+        Arrays.stream(players)
+                .filter(GamePlayer::isAlive)
+                .filter(p -> p.getTeam() == Team.MAFIA)
+                .forEach(p -> p.getChannel().writeAndFlush(new InformationMessagePacket(
+                        "Вы убили " + players[playerIndex].getVisibleName())));
+    }
 
+    private boolean checkForInnocentsWin() {
+        return Arrays.stream(players)
+                .filter(GamePlayer::isAlive)
+                .noneMatch(p -> p.getTeam() == Team.MAFIA);
+    }
+
+    private boolean checkForMafiaWin() {
+        int mafiaCount = 0;
+        int otherCount = 0;
+
+        for (GamePlayer player : players) {
+            if (player.isAlive()) {
+                if (player.getTeam() == Team.MAFIA) {
+                    mafiaCount++;
+                } else {
+                    otherCount++;
+                }
+            }
+        }
+
+        return mafiaCount > otherCount;
     }
 
     private List<Integer> findMostVoted(int[] votesForPlayers) {
@@ -143,11 +189,11 @@ public class GameSession extends TimerTask  {
 
         for (int player = 0; player < votesForPlayers.length; player++) {
             int votes = votesForPlayers[player];
-            if(votes > maxVotes) {
+            if (votes > maxVotes) {
                 maxVotes = votes;
                 mostVoted.clear();
                 mostVoted.add(player);
-            } else if(votes == maxVotes) {
+            } else if (votes == maxVotes) {
                 mostVoted.add(player);
             }
         }
@@ -163,7 +209,7 @@ public class GameSession extends TimerTask  {
 
     private int findLastAlivePlayerIndex() {
         for (int i = players.length - 1; i >= 0; i--) {
-            if(players[i].isAlive()) {
+            if (players[i].isAlive()) {
                 return i;
             }
         }
