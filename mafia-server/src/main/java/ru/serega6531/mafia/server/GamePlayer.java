@@ -17,6 +17,8 @@ public class GamePlayer {
     private Role role;
     private Team team;
     private Channel channel;
+
+    private boolean alive = true;
     private List<RoleInfo> knownRoles;
 
     public GamePlayer(int number, String name, String visibleName, Role role, Team team, Channel channel) {

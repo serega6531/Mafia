@@ -1,4 +1,4 @@
-package ru.serega6531.mafia.server.session.stages;
+package ru.serega6531.mafia.stages;
 
 public class InitialDiscussionStage implements GameStage {
     @Override
@@ -9,5 +9,10 @@ public class InitialDiscussionStage implements GameStage {
     @Override
     public boolean isOneOff() {
         return true;
+    }
+
+    @Override
+    public String messageAtStart() {
+        return "Наступил день. Игроки знакомятся друг с другом.";
     }
 }

@@ -1,7 +1,7 @@
 package ru.serega6531.mafia.server;
 
 import lombok.Getter;
-import ru.serega6531.mafia.server.session.stages.GameStage;
+import ru.serega6531.mafia.stages.GameStage;
 
 import java.util.List;
 
@@ -24,6 +24,7 @@ public class GameStageList {
             position = 0;
         }
 
+        currentStage.prepare();
         return currentStage;
     }
 

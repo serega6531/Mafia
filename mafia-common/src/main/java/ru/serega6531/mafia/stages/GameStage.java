@@ -1,4 +1,4 @@
-package ru.serega6531.mafia.server.session.stages;
+package ru.serega6531.mafia.stages;
 
 public interface GameStage {
 
@@ -9,6 +9,10 @@ public interface GameStage {
 
     default boolean isOneOff() {
         return false;
+    }
+
+    default String messageAtStart() {
+        return null;
     }
 
 }
