@@ -74,9 +74,14 @@ public class MafiaClientHandler extends ChannelInboundHandlerAdapter {
             if (listener != null) {
                 listener.accept((ChatMessagePacket) packet);
             }
+        } else if (packet instanceof InformationMessagePacket) {
+            final Consumer<InformationMessagePacket> listener = MafiaClient.getInformationMessageConsumer();
+            if (listener != null) {
+                listener.accept((InformationMessagePacket) packet);
+            }
         } else if (packet instanceof SessionStartedPacket) {
             SessionStartedPacket startedPacket = (SessionStartedPacket) packet;
-            if(MafiaClient.getCurrentLobby() != null &&
+            if (MafiaClient.getCurrentLobby() != null &&
                     startedPacket.getSessionId() == MafiaClient.getCurrentLobby().getId()) {
                 MafiaClient.setCurrentLobby(null);
                 MafiaClient.setCurrentSession(new LocalSession(
@@ -92,6 +97,8 @@ public class MafiaClientHandler extends ChannelInboundHandlerAdapter {
 
                 Platform.runLater(() -> primaryStage.setScene(scene));
             }
+        } else if(packet instanceof CountdownPacket) {
+            //TODO update timer label
         }
     }
 

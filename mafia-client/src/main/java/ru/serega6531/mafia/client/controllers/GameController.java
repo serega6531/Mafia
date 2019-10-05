@@ -4,15 +4,19 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
+import javafx.scene.text.Text;
+import org.fxmisc.richtext.InlineCssTextArea;
+import org.fxmisc.richtext.model.ReadOnlyStyledDocumentBuilder;
+import org.fxmisc.richtext.model.SegmentOps;
 import ru.serega6531.mafia.RoleInfo;
 import ru.serega6531.mafia.client.LocalSession;
 import ru.serega6531.mafia.client.MafiaClient;
 import ru.serega6531.mafia.enums.Role;
 import ru.serega6531.mafia.packets.client.ClientChatMessagePacket;
 import ru.serega6531.mafia.packets.server.ChatMessagePacket;
+import ru.serega6531.mafia.packets.server.InformationMessagePacket;
 
 import java.io.IOException;
 import java.util.Map;
@@ -27,7 +31,7 @@ public class GameController {
     private Pane playersPane;
 
     @FXML
-    private TextArea chatTextBox;
+    private InlineCssTextArea chatTextBox;
 
     @FXML
     private TextField chatInputField;
@@ -38,6 +42,7 @@ public class GameController {
     public void initialize() throws IOException {
         currentSession = MafiaClient.getCurrentSession();
         MafiaClient.setChatMessageConsumer(this::chatMessageListener);
+        MafiaClient.setInformationMessageConsumer(this::informationMessageListener);
         MafiaClient.setLobbyUpdateConsumer(null);
 
         final Map<Integer, Role> roles = currentSession.getKnownRoles().stream()
@@ -57,6 +62,11 @@ public class GameController {
 
             playersPane.getChildren().add(playerBox);
         }
+
+        chatTextBox.append(
+                new ReadOnlyStyledDocumentBuilder<String, String, String>(SegmentOps.styledTextOps(), null)
+                        .addParagraph("123", "-fx-font-size: 14pt; -fx-fill: red;")
+                        .build());
     }
 
     public void onSendButtonClick(ActionEvent event) {
@@ -70,6 +80,19 @@ public class GameController {
         final int playerNum = packet.getPlayerNum();
         String player = currentSession.getPlayers().get(playerNum);
 
-        chatTextBox.appendText(player + ": " + message + "\n");
+        final Text playerText = new Text(player);
+        final Text colonText = new Text(": ");
+        final Text messageText = new Text(message + "\n");
+//        chatTextBox.getChildren().addAll(playerText, colonText, messageText);
+//        chatTextBox.append(ReadOnlyStyledDocument.fromString(
+//                "111"
+//        ));
+    }
+
+    private void informationMessageListener(InformationMessagePacket packet) {
+        final String message = packet.getMessage();
+        final Text messageText = new Text(message + "\n");
+//        chatTextBox.getChildren().add(messageText);
+
     }
 }

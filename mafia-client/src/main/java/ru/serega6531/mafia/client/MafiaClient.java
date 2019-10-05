@@ -24,6 +24,7 @@ import ru.serega6531.mafia.SessionInitialParameters;
 import ru.serega6531.mafia.enums.Role;
 import ru.serega6531.mafia.packets.client.LogoutPacket;
 import ru.serega6531.mafia.packets.server.ChatMessagePacket;
+import ru.serega6531.mafia.packets.server.InformationMessagePacket;
 import ru.serega6531.mafia.packets.server.LobbyUpdatedPacket;
 
 import java.io.IOException;
@@ -66,6 +67,10 @@ public class MafiaClient extends Application {
     @Getter
     @Setter
     private static Consumer<ChatMessagePacket> chatMessageConsumer;
+
+    @Getter
+    @Setter
+    private static Consumer<InformationMessagePacket> informationMessageConsumer;
 
     private static final EventLoopGroup workerGroup = new NioEventLoopGroup();
 
