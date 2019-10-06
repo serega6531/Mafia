@@ -97,8 +97,11 @@ public class MafiaClientHandler extends ChannelInboundHandlerAdapter {
 
                 Platform.runLater(() -> primaryStage.setScene(scene));
             }
-        } else if(packet instanceof CountdownPacket) {
-            //TODO update timer label
+        } else if (packet instanceof CountdownPacket) {
+            final Consumer<CountdownPacket> listener = MafiaClient.getCountdownConsumer();
+            if (listener != null) {
+                listener.accept((CountdownPacket) listener);
+            }
         }
     }
 

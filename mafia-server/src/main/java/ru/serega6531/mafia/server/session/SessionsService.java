@@ -198,8 +198,8 @@ public class SessionsService {
     }
 
     private void validateParameters(SessionInitialParameters parameters) throws MafiaErrorMessageException {
-        if (parameters.getPlayersCount() < 5) {
-            throw new MafiaErrorMessageException("Игроков не может быть меньше пяти");
+        if (parameters.getPlayersCount() < 3) {
+            throw new MafiaErrorMessageException("Игроков не может быть меньше трех");
         }
 
         int mafiaCount = countPlayersOfTeam(parameters, Team.MAFIA);

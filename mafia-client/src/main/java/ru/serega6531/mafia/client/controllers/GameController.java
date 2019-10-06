@@ -17,6 +17,7 @@ import ru.serega6531.mafia.client.MafiaClient;
 import ru.serega6531.mafia.enums.Role;
 import ru.serega6531.mafia.packets.client.ClientChatMessagePacket;
 import ru.serega6531.mafia.packets.server.ChatMessagePacket;
+import ru.serega6531.mafia.packets.server.CountdownPacket;
 import ru.serega6531.mafia.packets.server.InformationMessagePacket;
 
 import java.io.IOException;
@@ -47,6 +48,7 @@ public class GameController {
         currentSession = MafiaClient.getCurrentSession();
         MafiaClient.setChatMessageConsumer(this::chatMessageListener);
         MafiaClient.setInformationMessageConsumer(this::informationMessageListener);
+        MafiaClient.setCountdownConsumer(this::countdownListener);
         MafiaClient.setLobbyUpdateConsumer(null);
 
         final Map<Integer, Role> roles = currentSession.getKnownRoles().stream()
@@ -86,6 +88,10 @@ public class GameController {
         final String message = packet.getMessage();
 
         appendColoredText(Collections.singletonList(message), Collections.singletonList("blue"));
+    }
+
+    private void countdownListener(CountdownPacket packet) {
+        timerLabel.setText(String.valueOf(packet.getSecondsLeft()));
     }
 
     private void appendColoredText(List<String> textParts, List<String> colors) {
