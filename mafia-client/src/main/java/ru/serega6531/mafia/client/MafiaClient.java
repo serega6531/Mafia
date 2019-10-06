@@ -20,10 +20,7 @@ import lombok.Setter;
 import ru.serega6531.mafia.AuthData;
 import ru.serega6531.mafia.GameLobby;
 import ru.serega6531.mafia.packets.client.LogoutPacket;
-import ru.serega6531.mafia.packets.server.ChatMessagePacket;
-import ru.serega6531.mafia.packets.server.CountdownPacket;
-import ru.serega6531.mafia.packets.server.InformationMessagePacket;
-import ru.serega6531.mafia.packets.server.LobbyUpdatedPacket;
+import ru.serega6531.mafia.packets.server.*;
 
 import java.io.IOException;
 import java.util.function.Consumer;
@@ -65,11 +62,19 @@ public class MafiaClient extends Application {
 
     @Getter
     @Setter
+    private static Consumer<InformationMessagePacket> informationMessageConsumer;
+
+    @Getter
+    @Setter
     private static Consumer<CountdownPacket> countdownConsumer;
 
     @Getter
     @Setter
-    private static Consumer<InformationMessagePacket> informationMessageConsumer;
+    private static Consumer<StartVotingPacket> startVotingListener;
+
+    @Getter
+    @Setter
+    private static Runnable stopVotingListener;
 
     private static final EventLoopGroup workerGroup = new NioEventLoopGroup();
 

@@ -19,6 +19,7 @@ import ru.serega6531.mafia.packets.client.ClientChatMessagePacket;
 import ru.serega6531.mafia.packets.server.ChatMessagePacket;
 import ru.serega6531.mafia.packets.server.CountdownPacket;
 import ru.serega6531.mafia.packets.server.InformationMessagePacket;
+import ru.serega6531.mafia.packets.server.StartVotingPacket;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -42,13 +43,18 @@ public class GameController {
     private TextField chatInputField;
 
     private LocalSession currentSession;
+    private PlayerBoxController[] playerControllers;
 
     @FXML
     public void initialize() throws IOException {
         currentSession = MafiaClient.getCurrentSession();
+        playerControllers = new PlayerBoxController[currentSession.getPlayers().size()];
+
         MafiaClient.setChatMessageConsumer(this::chatMessageListener);
         MafiaClient.setInformationMessageConsumer(this::informationMessageListener);
         MafiaClient.setCountdownConsumer(this::countdownListener);
+        MafiaClient.setStartVotingListener(this::startVotingListener);
+        MafiaClient.setStopVotingListener(this::stopVotingListener);
         MafiaClient.setLobbyUpdateConsumer(null);
 
         final Map<Integer, Role> roles = currentSession.getKnownRoles().stream()
@@ -60,8 +66,9 @@ public class GameController {
 
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/playerBox.fxml"));
 
-            final PlayerBoxController controller = new PlayerBoxController(playerName, i, isCurrentPlayer);
+            final PlayerBoxController controller = new PlayerBoxController(this, playerName, i, isCurrentPlayer);
             controller.setKnownRole(roles.getOrDefault(i, Role.UNKNOWN));
+            playerControllers[i] = controller;
 
             loader.setController(controller);
             Pane playerBox = loader.load();
@@ -92,6 +99,19 @@ public class GameController {
 
     private void countdownListener(CountdownPacket packet) {
         timerLabel.setText(String.valueOf(packet.getSecondsLeft()));
+    }
+
+    private void startVotingListener(StartVotingPacket packet) {
+        final List<Integer> possiblePlayers = packet.getPossiblePlayers();
+        for (int player : possiblePlayers) {
+            playerControllers[player].showVoteButton(true);
+        }
+    }
+
+    public void stopVotingListener() {
+        for (PlayerBoxController playerController : playerControllers) {
+            playerController.showVoteButton(false);
+        }
     }
 
     private void appendColoredText(List<String> textParts, List<String> colors) {
