@@ -6,10 +6,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
-import javafx.scene.text.Text;
 import org.fxmisc.richtext.InlineCssTextArea;
 import org.fxmisc.richtext.model.ReadOnlyStyledDocumentBuilder;
 import org.fxmisc.richtext.model.SegmentOps;
+import org.fxmisc.richtext.model.StyleSpan;
+import org.fxmisc.richtext.model.StyleSpansBuilder;
 import ru.serega6531.mafia.RoleInfo;
 import ru.serega6531.mafia.client.LocalSession;
 import ru.serega6531.mafia.client.MafiaClient;
@@ -19,6 +20,9 @@ import ru.serega6531.mafia.packets.server.ChatMessagePacket;
 import ru.serega6531.mafia.packets.server.InformationMessagePacket;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -62,11 +66,6 @@ public class GameController {
 
             playersPane.getChildren().add(playerBox);
         }
-
-        chatTextBox.append(
-                new ReadOnlyStyledDocumentBuilder<String, String, String>(SegmentOps.styledTextOps(), null)
-                        .addParagraph("123", "-fx-font-size: 14pt; -fx-fill: red;")
-                        .build());
     }
 
     public void onSendButtonClick(ActionEvent event) {
@@ -80,19 +79,31 @@ public class GameController {
         final int playerNum = packet.getPlayerNum();
         String player = currentSession.getPlayers().get(playerNum);
 
-        final Text playerText = new Text(player);
-        final Text colonText = new Text(": ");
-        final Text messageText = new Text(message + "\n");
-//        chatTextBox.getChildren().addAll(playerText, colonText, messageText);
-//        chatTextBox.append(ReadOnlyStyledDocument.fromString(
-//                "111"
-//        ));
+        appendColoredText(Arrays.asList(player, ": ", message), Arrays.asList("red", "black", "blue"));
     }
 
     private void informationMessageListener(InformationMessagePacket packet) {
         final String message = packet.getMessage();
-        final Text messageText = new Text(message + "\n");
-//        chatTextBox.getChildren().add(messageText);
 
+        appendColoredText(Collections.singletonList(message), Collections.singletonList("blue"));
+    }
+
+    private void appendColoredText(List<String> textParts, List<String> colors) {
+        final StyleSpansBuilder<String> stylesBuilder = new StyleSpansBuilder<>();
+        final String fullText = String.join("", textParts) + "\n";
+
+        for (int i = 0; i < textParts.size(); i++) {
+            String text = textParts.get(i);
+            String color = colors.get(i);
+
+            stylesBuilder.add(
+                    new StyleSpan<>(String.format("-fx-font-size: 14pt; -fx-fill: %s;", color),
+                    text.length() + (i == textParts.size() - 1 ? 1 : 0)));
+        }
+
+        chatTextBox.append(
+                new ReadOnlyStyledDocumentBuilder<String, String, String>(SegmentOps.styledTextOps(), null)
+                        .addParagraph(fullText, stylesBuilder.create())
+                        .build());
     }
 }
