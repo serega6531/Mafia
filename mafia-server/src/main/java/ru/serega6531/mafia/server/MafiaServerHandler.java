@@ -19,6 +19,7 @@ import ru.serega6531.mafia.server.session.GameSession;
 import ru.serega6531.mafia.server.session.SessionsService;
 import ru.serega6531.mafia.stages.DayVoteStage;
 import ru.serega6531.mafia.stages.GameStage;
+import ru.serega6531.mafia.stages.MafiaDiscussionStage;
 import ru.serega6531.mafia.stages.MafiaVoteStage;
 
 import java.util.Arrays;
@@ -155,14 +156,15 @@ public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
 
                 final GameLobby lobby = sessionsService.getLobbyByPlayer(player);
                 if (lobby != null) {
-                    final ChatMessagePacket outMsg = new ChatMessagePacket(lobby.getPlayers().indexOf(player), message);
+                    final ChatMessagePacket outMsg = new ChatMessagePacket(lobby.getPlayers().indexOf(player), message, ChatMessagePacket.ChatChannel.GLOBAL);
                     sessionsService.getChannelGroup(lobby.getId()).writeAndFlush(outMsg);
                     return;
                 }
 
                 final GameSession session = sessionsService.getSessionByPlayer(player);
                 if (session != null) {
-                    //TODO
+                    GamePlayer gp = session.getPlayerByName(player);
+                    session.handleChatMessage(gp, message);
                 }
             } else if (packet instanceof PlayerVotePacket) {
                 PlayerVotePacket votePacket = (PlayerVotePacket) packet;

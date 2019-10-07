@@ -179,6 +179,30 @@ public class GameSession extends TimerTask {
                         "Вы убили " + players[playerIndex].getVisibleName())));
     }
 
+    public void handleChatMessage(GamePlayer player, String message) {
+        GameStage stage = stages.getCurrentStage();
+
+        if (!player.isAlive()) {
+            ChatMessagePacket outPacket = new ChatMessagePacket(player.getNumber(), message, ChatMessagePacket.ChatChannel.DEAD);
+
+            Arrays.stream(players)
+                    .filter(p -> !p.isAlive())
+                    .map(GamePlayer::getChannel)
+                    .forEach(ch -> ch.writeAndFlush(outPacket));
+        } else if((stage instanceof MafiaDiscussionStage || stage instanceof MafiaVoteStage) &&
+                player.getTeam() == Team.MAFIA) {
+            ChatMessagePacket outPacket = new ChatMessagePacket(player.getNumber(), message, ChatMessagePacket.ChatChannel.MAFIA);
+
+            Arrays.stream(players)
+                    .filter(p -> p.getTeam() == Team.MAFIA) // отправлять ли мертвым мирным?
+                    .map(GamePlayer::getChannel)
+                    .forEach(ch -> ch.writeAndFlush(outPacket));
+        } else {
+            ChatMessagePacket outPacket = new ChatMessagePacket(player.getNumber(), message, ChatMessagePacket.ChatChannel.GLOBAL);
+            allPlayersChannelGroup.writeAndFlush(outPacket);
+        }
+    }
+
     private boolean checkForInnocentsWin() {
         return Arrays.stream(players)
                 .filter(GamePlayer::isAlive)

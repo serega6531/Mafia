@@ -12,5 +12,10 @@ public class ChatMessagePacket extends MafiaPacket {
 
     private int playerNum;
     private String message;
+    private ChatChannel chatChannel;
+
+    public enum ChatChannel {
+        GLOBAL, MAFIA, DEAD
+    }
 
 }
