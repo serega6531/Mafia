@@ -59,7 +59,7 @@ public class PlayerBoxController {
         voteButton.setVisible(show);
     }
 
-    private void onVoteButtonPress() {
+    public void onVoteButtonPress() {
         gameController.stopVotingListener();
         MafiaClient.getChannel().writeAndFlush(new PlayerVotePacket(MafiaClient.getAuthData(), playerNumber));
     }

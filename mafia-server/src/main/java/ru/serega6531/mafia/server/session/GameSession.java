@@ -7,6 +7,7 @@ import ru.serega6531.mafia.enums.Team;
 import ru.serega6531.mafia.packets.server.*;
 import ru.serega6531.mafia.server.GamePlayer;
 import ru.serega6531.mafia.server.GameStageList;
+import ru.serega6531.mafia.server.exceptions.MafiaErrorMessageException;
 import ru.serega6531.mafia.stages.*;
 
 import java.util.*;
@@ -53,6 +54,7 @@ public class GameSession extends TimerTask {
 
         list.add(new InitialDiscussionStage());
         list.add(new DayVoteStage());
+        list.add(new MafiaDiscussionStage());
         list.add(new MafiaVoteStage());
 
         return new GameStageList(list);
@@ -60,9 +62,11 @@ public class GameSession extends TimerTask {
 
     @Override
     public void run() {
-        System.out.println("Timer task");
         if (stageTimeLeft == 0) {
             final GameStage prevStage = stages.getCurrentStage();
+            if (prevStage != null) {
+                System.out.printf("[%d] Закончилась стадия %s\n", id, prevStage.getClass().getSimpleName());
+            }
 
             if (prevStage instanceof DayVoteStage) {
                 processDayVotes(((DayVoteStage) prevStage).getVotes());
@@ -74,6 +78,8 @@ public class GameSession extends TimerTask {
 
             final GameStage nextStage = stages.next();
             stageTimeLeft = nextStage.length();
+
+            System.out.printf("[%d] Началась стадия %s\n", id, nextStage.getClass().getSimpleName());
 
             getAllPlayersChannelGroup().writeAndFlush(
                     new StageChangePacket(nextStage));
@@ -89,23 +95,25 @@ public class GameSession extends TimerTask {
 
             if (nextStage instanceof DayDiscussionStage && playerToKillAtNight != null) {
                 final GamePlayer killed = players[playerToKillAtNight];
+                System.out.printf("[%d] Убит игрок %s (%s)\n", id, killed.getName(), killed.getRole().getRoleName());
                 allPlayersChannelGroup.write(new InformationMessagePacket(
                         "Этой ночью погиб " + killed.getVisibleName()));
                 allPlayersChannelGroup.writeAndFlush(new PlayerDiedPacket(playerToKillAtNight));
                 killed.setAlive(false);
                 killed.getChannel().writeAndFlush(new InformationMessagePacket("Вас убили и вы выбыли из игры"));
             } else if (nextStage instanceof DayVoteStage) {
-                List<Integer> possiblePlayers = getAlivePlayerIndexes();
+                List<Integer> alivePlayers = getAlivePlayerIndexes();
 
-                for (GamePlayer player : players) {
-                    player.getChannel().writeAndFlush(new StartVotingPacket(possiblePlayers));
+                for (int player : alivePlayers) {
+                    System.out.println(players[player].getChannel());
+                    players[player].getChannel().writeAndFlush(new StartVotingPacket(alivePlayers));
                 }
             } else if (nextStage instanceof MafiaVoteStage) {
-                List<Integer> possiblePlayers = getAlivePlayerIndexes();
+                List<Integer> alivePlayers = getAlivePlayerIndexes();
 
-                for (GamePlayer player : players) {
-                    if(player.getTeam() == Team.MAFIA) {
-                        player.getChannel().writeAndFlush(new StartVotingPacket(possiblePlayers));
+                for (int player : alivePlayers) {
+                    if (players[player].getTeam() == Team.MAFIA) {
+                        players[player].getChannel().writeAndFlush(new StartVotingPacket(alivePlayers));
                     }
                 }
             }
@@ -160,12 +168,15 @@ public class GameSession extends TimerTask {
     private void jail(int playerIndex) {
         GamePlayer player = players[playerIndex];
         player.setAlive(false);
+        System.out.printf("[%d] Посажен игрок %s (%s)\n", id, player.getName(), player.getRole().getRoleName());
         player.getChannel().writeAndFlush(new InformationMessagePacket("Вас посадили и вы выбыли из игры"));
         allPlayersChannelGroup.writeAndFlush(new InformationMessagePacket("Посажен " + player.getVisibleName()));
 
         if (player.getTeam() != Team.MAFIA && checkForMafiaWin()) {
+            System.out.printf("[%d] Победа мафии\n", id);
             allPlayersChannelGroup.writeAndFlush(new InformationMessagePacket("Победа мафии (TODO)"));
         } else if (player.getTeam() == Team.MAFIA && checkForInnocentsWin()) {
+            System.out.printf("[%d] Победа мирных\n", id);
             allPlayersChannelGroup.writeAndFlush(new InformationMessagePacket("Победа мирных (TODO)"));
         }
     }
@@ -189,7 +200,7 @@ public class GameSession extends TimerTask {
                     .filter(p -> !p.isAlive())
                     .map(GamePlayer::getChannel)
                     .forEach(ch -> ch.writeAndFlush(outPacket));
-        } else if((stage instanceof MafiaDiscussionStage || stage instanceof MafiaVoteStage) &&
+        } else if ((stage instanceof MafiaDiscussionStage || stage instanceof MafiaVoteStage) &&
                 player.getTeam() == Team.MAFIA) {
             ChatMessagePacket outPacket = new ChatMessagePacket(player.getNumber(), message, ChatMessagePacket.ChatChannel.MAFIA);
 
@@ -200,6 +211,23 @@ public class GameSession extends TimerTask {
         } else {
             ChatMessagePacket outPacket = new ChatMessagePacket(player.getNumber(), message, ChatMessagePacket.ChatChannel.GLOBAL);
             allPlayersChannelGroup.writeAndFlush(outPacket);
+        }
+    }
+
+    public void handleVote(GamePlayer player, int vote) throws MafiaErrorMessageException {
+        final GameStage currentStage = stages.getCurrentStage();
+
+        if(!player.isAlive()) {
+            throw new MafiaErrorMessageException("Вы не можете голосовать, когда мертвы");
+        }
+
+        if (currentStage instanceof DayVoteStage) {
+            System.out.printf("[%d] %s проголосовал за %d\n", id, player.getName(), vote);
+            ((DayVoteStage) currentStage).getVotes().put(player.getName(), vote);
+        } else if(currentStage instanceof MafiaVoteStage &&
+                player.getTeam() == Team.MAFIA) {
+            System.out.printf("[%d] %s проголосовал за %d\n", id, player.getName(), vote);
+            ((MafiaVoteStage) currentStage).getVotes().put(player.getName(), vote);
         }
     }
 

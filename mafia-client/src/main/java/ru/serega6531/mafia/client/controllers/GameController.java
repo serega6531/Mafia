@@ -1,5 +1,6 @@
 package ru.serega6531.mafia.client.controllers;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -32,7 +33,7 @@ public class GameController {
 
     @FXML
     private Label timerLabel;
-    
+
     @FXML
     private Pane playersPane;
 
@@ -67,11 +68,11 @@ public class GameController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/playerBox.fxml"));
 
             final PlayerBoxController controller = new PlayerBoxController(this, playerName, i, isCurrentPlayer);
-            controller.setKnownRole(roles.getOrDefault(i, Role.UNKNOWN));
             playerControllers[i] = controller;
 
             loader.setController(controller);
             Pane playerBox = loader.load();
+            controller.setKnownRole(roles.getOrDefault(i, Role.UNKNOWN));
 
             playersPane.getChildren().add(playerBox);
         }
@@ -98,20 +99,26 @@ public class GameController {
     }
 
     private void countdownListener(CountdownPacket packet) {
-        timerLabel.setText(String.valueOf(packet.getSecondsLeft()));
+        Platform.runLater(() -> {
+            timerLabel.setText(String.valueOf(packet.getSecondsLeft()));
+        });
     }
 
     private void startVotingListener(StartVotingPacket packet) {
         final List<Integer> possiblePlayers = packet.getPossiblePlayers();
-        for (int player : possiblePlayers) {
-            playerControllers[player].showVoteButton(true);
-        }
+        Platform.runLater(() -> {
+            for (int player : possiblePlayers) {
+                playerControllers[player].showVoteButton(true);
+            }
+        });
     }
 
     public void stopVotingListener() {
-        for (PlayerBoxController playerController : playerControllers) {
-            playerController.showVoteButton(false);
-        }
+        Platform.runLater(() -> {
+            for (PlayerBoxController playerController : playerControllers) {
+                playerController.showVoteButton(false);
+            }
+        });
     }
 
     private void appendColoredText(List<String> textParts, List<String> colors) {
@@ -124,12 +131,12 @@ public class GameController {
 
             stylesBuilder.add(
                     new StyleSpan<>(String.format("-fx-font-size: 14pt; -fx-fill: %s;", color),
-                    text.length() + (i == textParts.size() - 1 ? 1 : 0)));
+                            text.length() + (i == textParts.size() - 1 ? 1 : 0)));
         }
 
-        chatTextBox.append(
+        Platform.runLater(() -> chatTextBox.append(
                 new ReadOnlyStyledDocumentBuilder<String, String, String>(SegmentOps.styledTextOps(), null)
                         .addParagraph(fullText, stylesBuilder.create())
-                        .build());
+                        .build()));
     }
 }

@@ -100,7 +100,17 @@ public class MafiaClientHandler extends ChannelInboundHandlerAdapter {
         } else if (packet instanceof CountdownPacket) {
             final Consumer<CountdownPacket> listener = MafiaClient.getCountdownConsumer();
             if (listener != null) {
-                listener.accept((CountdownPacket) listener);
+                listener.accept((CountdownPacket) packet);
+            }
+        } else if (packet instanceof StartVotingPacket) {
+            final Consumer<StartVotingPacket> listener = MafiaClient.getStartVotingListener();
+            if (listener != null) {
+                listener.accept((StartVotingPacket) packet);
+            }
+        } else if (packet instanceof StopVotingPacket) {
+            final Runnable listener = MafiaClient.getStopVotingListener();
+            if (listener != null) {
+                listener.run();
             }
         }
     }

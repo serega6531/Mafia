@@ -47,6 +47,7 @@ public class MafiaServer {
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
 
             ChannelFuture f = b.bind(port).sync();
+            System.out.println("Сервер запущен на порту " + port);
 
             f.channel().closeFuture().sync();
         } finally {
