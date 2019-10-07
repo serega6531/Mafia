@@ -11,6 +11,7 @@ import ru.serega6531.mafia.stages.*;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 @Getter
 public class GameSession extends TimerTask {
@@ -20,6 +21,7 @@ public class GameSession extends TimerTask {
     private String creator;
     private final SessionInitialParameters parameters;
     private final GamePlayer[] players;
+    private final Map<String, GamePlayer> playersByNames = new HashMap<>();
 
     private final GameStageList stages;
     private final Timer timer;
@@ -35,6 +37,10 @@ public class GameSession extends TimerTask {
         this.creator = creator;
         this.parameters = parameters;
         this.players = players;
+
+        for (GamePlayer player : players) {
+            playersByNames.put(player.getName(), player);
+        }
 
         this.timer = new Timer("session-" + id + "-timer");
         timer.schedule(this, 1000L, 1000L);
@@ -89,25 +95,13 @@ public class GameSession extends TimerTask {
                 killed.setAlive(false);
                 killed.getChannel().writeAndFlush(new InformationMessagePacket("Вас убили и вы выбыли из игры"));
             } else if (nextStage instanceof DayVoteStage) {
-                List<Integer> possiblePlayers = new ArrayList<>();
-
-                for (int i = 0; i < players.length; i++) {
-                    if(players[i].isAlive()) {
-                        possiblePlayers.add(i);
-                    }
-                }
+                List<Integer> possiblePlayers = getAlivePlayerIndexes();
 
                 for (GamePlayer player : players) {
                     player.getChannel().writeAndFlush(new StartVotingPacket(possiblePlayers));
                 }
             } else if (nextStage instanceof MafiaVoteStage) {
-                List<Integer> possiblePlayers = new ArrayList<>();
-
-                for (int i = 0; i < players.length; i++) {
-                    if(players[i].isAlive() && players[i].getTeam() != Team.MAFIA) {
-                        possiblePlayers.add(i);
-                    }
-                }
+                List<Integer> possiblePlayers = getAlivePlayerIndexes();
 
                 for (GamePlayer player : players) {
                     if(player.getTeam() == Team.MAFIA) {
@@ -240,6 +234,17 @@ public class GameSession extends TimerTask {
         }
 
         return 0;
+    }
+
+    private List<Integer> getAlivePlayerIndexes() {
+        return Arrays.stream(players)
+                .filter(GamePlayer::isAlive)
+                .map(GamePlayer::getNumber)
+                .collect(Collectors.toList());
+    }
+
+    public GamePlayer getPlayerByName(String name) {
+        return playersByNames.get(name);
     }
 
 }

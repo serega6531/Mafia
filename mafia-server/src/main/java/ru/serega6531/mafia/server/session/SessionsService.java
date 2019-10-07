@@ -92,7 +92,7 @@ public class SessionsService {
         for (int i = 0; i < players.size(); i++) {
             String playerName = players.get(i);
             final Role role = roles.get(i);
-            GamePlayer gp = new GamePlayer(i + 1, playerName, String.valueOf(i + 1), role, role.getTeam(), serverHandler.getChannelForPlayer(player));
+            GamePlayer gp = new GamePlayer(i, playerName, String.valueOf(i + 1), role, role.getTeam(), serverHandler.getChannelForPlayer(player));
             gamePlayers.add(gp);
         }
 

@@ -11,11 +11,15 @@ import ru.serega6531.mafia.AuthData;
 import ru.serega6531.mafia.GameLobby;
 import ru.serega6531.mafia.SessionInitialParameters;
 import ru.serega6531.mafia.enums.LobbyUpdateType;
+import ru.serega6531.mafia.enums.Team;
 import ru.serega6531.mafia.packets.client.*;
 import ru.serega6531.mafia.packets.server.*;
 import ru.serega6531.mafia.server.exceptions.MafiaErrorMessageException;
 import ru.serega6531.mafia.server.session.GameSession;
 import ru.serega6531.mafia.server.session.SessionsService;
+import ru.serega6531.mafia.stages.DayVoteStage;
+import ru.serega6531.mafia.stages.GameStage;
+import ru.serega6531.mafia.stages.MafiaVoteStage;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -94,7 +98,7 @@ public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
                     final ChannelGroup group = sessionsService.getChannelGroup(lobby.getId());
                     lobby.getPlayers().remove(player);
 
-                    if (lobby.getPlayers().size() > 0) {
+                    if (!lobby.getPlayers().isEmpty()) {
                         if (lobby.getCreator().equals(player)) {
                             lobby.setCreator(lobby.getPlayers().get(0));
 
@@ -159,6 +163,24 @@ public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
                 final GameSession session = sessionsService.getSessionByPlayer(player);
                 if (session != null) {
                     //TODO
+                }
+            } else if (packet instanceof PlayerVotePacket) {
+                PlayerVotePacket votePacket = (PlayerVotePacket) packet;
+                final GameSession session = sessionsService.getSessionByPlayer(player);
+                if (session != null) {
+                    GameStage currentStage = session.getStages().getCurrentStage();
+                    GamePlayer gp = session.getPlayerByName(player);
+
+                    if(!gp.isAlive()) {
+                        throw new MafiaErrorMessageException("Вы не можете голосовать, когда мертвы");
+                    }
+
+                    if (currentStage instanceof DayVoteStage) {
+                        ((DayVoteStage) currentStage).getVotes().put(player, votePacket.getPlayerIndex());
+                    } else if(currentStage instanceof MafiaVoteStage &&
+                            gp.getTeam() == Team.MAFIA) {
+                        ((MafiaVoteStage) currentStage).getVotes().put(player, votePacket.getPlayerIndex());
+                    }
                 }
             }
         } catch (MafiaErrorMessageException e) {
