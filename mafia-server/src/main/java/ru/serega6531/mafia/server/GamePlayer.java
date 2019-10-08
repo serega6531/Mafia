@@ -11,12 +11,12 @@ import java.util.List;
 @Data
 public class GamePlayer {
 
-    private int number;
-    private String name;
-    private String visibleName;
+    private final int number;
+    private final String name;
+    private final String visibleName;
     private Role role;
     private Team team;
-    private Channel channel;
+    private final Channel channel;
 
     private boolean alive = true;
     private List<RoleInfo> knownRoles;

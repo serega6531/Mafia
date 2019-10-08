@@ -53,6 +53,7 @@ public class GameSession extends TimerTask {
         List<GameStage> list = new ArrayList<>();
 
         list.add(new InitialDiscussionStage());
+        list.add(new DayDiscussionStage());
         list.add(new DayVoteStage());
         list.add(new MafiaDiscussionStage());
         list.add(new MafiaVoteStage());
@@ -98,14 +99,14 @@ public class GameSession extends TimerTask {
                 System.out.printf("[%d] Убит игрок %s (%s)\n", id, killed.getName(), killed.getRole().getRoleName());
                 allPlayersChannelGroup.write(new InformationMessagePacket(
                         "Этой ночью погиб " + killed.getVisibleName()));
-                allPlayersChannelGroup.writeAndFlush(new PlayerDiedPacket(playerToKillAtNight));
+                allPlayersChannelGroup.writeAndFlush(new PlayerDiedPacket(playerToKillAtNight, "Застрелен"));
                 killed.setAlive(false);
                 killed.getChannel().writeAndFlush(new InformationMessagePacket("Вас убили и вы выбыли из игры"));
+                checkForWin(killed);
             } else if (nextStage instanceof DayVoteStage) {
                 List<Integer> alivePlayers = getAlivePlayerIndexes();
 
                 for (int player : alivePlayers) {
-                    System.out.println(players[player].getChannel());
                     players[player].getChannel().writeAndFlush(new StartVotingPacket(alivePlayers));
                 }
             } else if (nextStage instanceof MafiaVoteStage) {
@@ -130,9 +131,14 @@ public class GameSession extends TimerTask {
             votesForPlayers[vote]++;
         }
 
-        final int alivePlayers = countAlivePlayers();
-        if (votesOfPlayers.size() < alivePlayers) {
-            votesForPlayers[findLastAlivePlayerIndex()] += alivePlayers - votesOfPlayers.size();
+        final int alivePlayersCount = countAlivePlayers();
+        if (votesOfPlayers.size() < alivePlayersCount) {
+            votesForPlayers[findLastAlivePlayerIndex()] += alivePlayersCount - votesOfPlayers.size();
+        }
+
+        final VoteResultsPacket voteResultsPacket = new VoteResultsPacket(votesForPlayers);
+        for (GamePlayer player : players) {
+            player.getChannel().writeAndFlush(voteResultsPacket);
         }
 
         List<Integer> mostVoted = findMostVoted(votesForPlayers);
@@ -156,6 +162,13 @@ public class GameSession extends TimerTask {
             }
         }
 
+        final VoteResultsPacket voteResultsPacket = new VoteResultsPacket(votesForPlayers);
+        for (GamePlayer player : players) {
+            if (player.getTeam() == Team.MAFIA) {
+                player.getChannel().writeAndFlush(voteResultsPacket);
+            }
+        }
+
         List<Integer> mostVoted = findMostVoted(votesForPlayers);
 
         if (mostVoted.size() == 1) {
@@ -170,15 +183,10 @@ public class GameSession extends TimerTask {
         player.setAlive(false);
         System.out.printf("[%d] Посажен игрок %s (%s)\n", id, player.getName(), player.getRole().getRoleName());
         player.getChannel().writeAndFlush(new InformationMessagePacket("Вас посадили и вы выбыли из игры"));
-        allPlayersChannelGroup.writeAndFlush(new InformationMessagePacket("Посажен " + player.getVisibleName()));
+        allPlayersChannelGroup.write(new InformationMessagePacket("Посажен " + player.getVisibleName()));
+        allPlayersChannelGroup.writeAndFlush(new PlayerDiedPacket(playerIndex, "Посажен"));
 
-        if (player.getTeam() != Team.MAFIA && checkForMafiaWin()) {
-            System.out.printf("[%d] Победа мафии\n", id);
-            allPlayersChannelGroup.writeAndFlush(new InformationMessagePacket("Победа мафии (TODO)"));
-        } else if (player.getTeam() == Team.MAFIA && checkForInnocentsWin()) {
-            System.out.printf("[%d] Победа мирных\n", id);
-            allPlayersChannelGroup.writeAndFlush(new InformationMessagePacket("Победа мирных (TODO)"));
-        }
+        checkForWin(player);
     }
 
     private void kill(int playerIndex) {
@@ -188,6 +196,16 @@ public class GameSession extends TimerTask {
                 .filter(p -> p.getTeam() == Team.MAFIA)
                 .forEach(p -> p.getChannel().writeAndFlush(new InformationMessagePacket(
                         "Вы убили " + players[playerIndex].getVisibleName())));
+    }
+
+    private void checkForWin(GamePlayer killedPlayer) {
+        if (killedPlayer.getTeam() != Team.MAFIA && checkForMafiaWin()) {
+            System.out.printf("[%d] Победа мафии\n", id);
+            allPlayersChannelGroup.writeAndFlush(new InformationMessagePacket("Победа мафии (TODO)"));
+        } else if (killedPlayer.getTeam() == Team.MAFIA && checkForInnocentsWin()) {
+            System.out.printf("[%d] Победа мирных\n", id);
+            allPlayersChannelGroup.writeAndFlush(new InformationMessagePacket("Победа мирных (TODO)"));
+        }
     }
 
     public void handleChatMessage(GamePlayer player, String message) {

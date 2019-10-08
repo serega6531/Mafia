@@ -8,9 +8,8 @@ import ru.serega6531.mafia.packets.MafiaPacket;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @AllArgsConstructor
-public class PlayerDiedPacket extends MafiaPacket {
+public class VoteResultsPacket extends MafiaPacket {
 
-    private int playerIndex;
-    private String reason;
+    private int[] votesForPlayers;
 
 }

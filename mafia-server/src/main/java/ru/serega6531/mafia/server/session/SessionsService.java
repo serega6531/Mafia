@@ -66,8 +66,8 @@ public class SessionsService {
         return lobby;
     }
 
-    public GameSession startSession(String player) throws MafiaErrorMessageException {
-        GameLobby lobby = getLobbyByCreator(player);
+    public GameSession startSession(String creator) throws MafiaErrorMessageException {
+        GameLobby lobby = getLobbyByCreator(creator);
         if (lobby == null) {
             throw new MafiaErrorMessageException("Вы не создатель лобби");
         }
@@ -92,7 +92,7 @@ public class SessionsService {
         for (int i = 0; i < players.size(); i++) {
             String playerName = players.get(i);
             final Role role = roles.get(i);
-            GamePlayer gp = new GamePlayer(i, playerName, String.valueOf(i + 1), role, role.getTeam(), serverHandler.getChannelForPlayer(player));
+            GamePlayer gp = new GamePlayer(i, playerName, "Игрок " + (i + 1), role, role.getTeam(), serverHandler.getChannelForPlayer(playerName));
             gamePlayers.add(gp);
         }
 

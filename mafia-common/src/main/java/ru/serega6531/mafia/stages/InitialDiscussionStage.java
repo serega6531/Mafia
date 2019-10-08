@@ -13,6 +13,6 @@ public class InitialDiscussionStage implements GameStage {
 
     @Override
     public String messageAtStart() {
-        return "Наступил день. Игроки знакомятся друг с другом.";
+        return "Игроки знакомятся друг с другом.";
     }
 }

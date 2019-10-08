@@ -112,6 +112,16 @@ public class MafiaClientHandler extends ChannelInboundHandlerAdapter {
             if (listener != null) {
                 listener.run();
             }
+        } else if (packet instanceof VoteResultsPacket) {
+            final Consumer<VoteResultsPacket> listener = MafiaClient.getVoteResultsListener();
+            if (listener != null) {
+                listener.accept((VoteResultsPacket) packet);
+            }
+        } else if (packet instanceof PlayerDiedPacket) {
+            final Consumer<PlayerDiedPacket> listener = MafiaClient.getPlayerDiedListener();
+            if (listener != null) {
+                listener.accept((PlayerDiedPacket) packet);
+            }
         }
     }
 

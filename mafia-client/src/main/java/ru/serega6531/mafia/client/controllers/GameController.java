@@ -17,10 +17,7 @@ import ru.serega6531.mafia.client.LocalSession;
 import ru.serega6531.mafia.client.MafiaClient;
 import ru.serega6531.mafia.enums.Role;
 import ru.serega6531.mafia.packets.client.ClientChatMessagePacket;
-import ru.serega6531.mafia.packets.server.ChatMessagePacket;
-import ru.serega6531.mafia.packets.server.CountdownPacket;
-import ru.serega6531.mafia.packets.server.InformationMessagePacket;
-import ru.serega6531.mafia.packets.server.StartVotingPacket;
+import ru.serega6531.mafia.packets.server.*;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -56,6 +53,8 @@ public class GameController {
         MafiaClient.setCountdownConsumer(this::countdownListener);
         MafiaClient.setStartVotingListener(this::startVotingListener);
         MafiaClient.setStopVotingListener(this::stopVotingListener);
+        MafiaClient.setVoteResultsListener(this::voteResultsListener);
+        MafiaClient.setPlayerDiedListener(this::playerDiedListener);
         MafiaClient.setLobbyUpdateConsumer(null);
 
         final Map<Integer, Role> roles = currentSession.getKnownRoles().stream()
@@ -113,12 +112,26 @@ public class GameController {
         });
     }
 
-    public void stopVotingListener() {
+    void stopVotingListener() {
         Platform.runLater(() -> {
             for (PlayerBoxController playerController : playerControllers) {
                 playerController.showVoteButton(false);
             }
         });
+    }
+
+    private void voteResultsListener(VoteResultsPacket packet) {
+        for (int player = 0; player < packet.getVotesForPlayers().length; player++) {
+            List<String> texts = Arrays.asList(
+                    "За ", currentSession.getPlayers().get(player), " - ",
+                    String.valueOf(packet.getVotesForPlayers()[player]), " голосов");
+            List<String> colors = Arrays.asList("black", "blue", "black", "blue", "black");
+            appendColoredText(texts, colors);
+        }
+    }
+
+    private void playerDiedListener(PlayerDiedPacket packet) {
+        Platform.runLater(() -> playerControllers[packet.getPlayerIndex()].setDeathReason(packet.getReason()));
     }
 
     private void appendColoredText(List<String> textParts, List<String> colors) {

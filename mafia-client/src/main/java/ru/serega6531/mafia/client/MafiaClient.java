@@ -76,6 +76,14 @@ public class MafiaClient extends Application {
     @Setter
     private static Runnable stopVotingListener;
 
+    @Getter
+    @Setter
+    private static Consumer<VoteResultsPacket> voteResultsListener;
+
+    @Getter
+    @Setter
+    private static Consumer<PlayerDiedPacket> playerDiedListener;
+
     private static final EventLoopGroup workerGroup = new NioEventLoopGroup();
 
     public static void main(String[] args) {

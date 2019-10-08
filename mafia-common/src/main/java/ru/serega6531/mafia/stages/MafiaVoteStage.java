@@ -16,6 +16,11 @@ public class MafiaVoteStage implements GameStage {
     }
 
     @Override
+    public String messageAtStart() {
+        return "Мафия выбирает свою цель";
+    }
+
+    @Override
     public void prepare() {
         votes.clear();
     }

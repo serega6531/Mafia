@@ -35,6 +35,9 @@ public class PlayerBoxController {
     @FXML
     private Button voteButton;
 
+    @FXML
+    private Label deathReasonLabel;
+
     public PlayerBoxController(GameController gameController, String playerName, int playerNumber, boolean isCurrentPlayer) {
         this.gameController = gameController;
         this.playerName = playerName;
@@ -62,5 +65,10 @@ public class PlayerBoxController {
     public void onVoteButtonPress() {
         gameController.stopVotingListener();
         MafiaClient.getChannel().writeAndFlush(new PlayerVotePacket(MafiaClient.getAuthData(), playerNumber));
+    }
+
+    public void setDeathReason(String reason) {
+        deathReasonLabel.setText(reason);
+        deathReasonLabel.setVisible(true);
     }
 }
