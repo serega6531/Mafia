@@ -11,11 +11,20 @@ repositories {
     mavenCentral()
 }
 
+jar {
+    manifest {
+        attributes "Main-Class": "ru.serega6531.mafia.server.MafiaServer"
+    }
+
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
 dependencies {
     compile project(':mafia-common')
     compile('io.netty:netty-all:4.0.56.Final')
     compileOnly 'org.projectlombok:lombok:1.18.8'
     annotationProcessor 'org.projectlombok:lombok:1.18.8'
     compile 'com.google.guava:guava:28.0-jre'
-//    testCompile group: 'junit', name: 'junit', version: '4.12'
 }
