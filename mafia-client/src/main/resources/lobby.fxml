@@ -8,18 +8,19 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="450.0" prefWidth="798.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.serega6531.mafia.client.controllers.LobbyController">
-   <children>
-      <TextArea fx:id="chatTextBox" editable="false" layoutX="14.0" layoutY="14.0" prefHeight="310.0" prefWidth="568.0" />
-      <TextField fx:id="chatInputField" layoutX="14.0" layoutY="324.0" prefHeight="32.0" prefWidth="475.0" />
-      <Button defaultButton="true" layoutX="489.0" layoutY="324.0" mnemonicParsing="false" onAction="#onSendButtonClick" prefHeight="32.0" prefWidth="92.0" text="Отправить" />
-      <ListView fx:id="playersList" disable="true" layoutX="589.0" layoutY="14.0" prefHeight="341.0" prefWidth="196.0" />
-      <Label layoutX="14.0" layoutY="367.0" text="Роли:" />
-      <Label fx:id="rolesLabel" layoutX="61.0" layoutY="367.0" text="PLACEHOLDER" />
-      <Button fx:id="startButton" disable="true" layoutX="589.0" layoutY="362.0" mnemonicParsing="false" onAction="#onStartPress" prefHeight="78.0" prefWidth="196.0" text="Начать">
-         <font>
-            <Font size="22.0" />
-         </font>
-      </Button>
-   </children>
+<AnchorPane prefHeight="450.0" prefWidth="798.0" xmlns="http://javafx.com/javafx/8.0.171"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.serega6531.mafia.client.controllers.LobbyController">
+   <TextArea fx:id="chatTextBox" editable="false" layoutX="14.0" layoutY="14.0" prefHeight="310.0" prefWidth="568.0"/>
+   <TextField fx:id="chatInputField" layoutX="14.0" layoutY="324.0" prefHeight="32.0" prefWidth="475.0"/>
+   <Button defaultButton="true" layoutX="489.0" layoutY="324.0" mnemonicParsing="false" onAction="#onSendButtonClick"
+           prefHeight="32.0" prefWidth="92.0" text="Отправить"/>
+   <ListView fx:id="playersList" disable="true" layoutX="589.0" layoutY="14.0" prefHeight="341.0" prefWidth="196.0"/>
+   <Label layoutX="14.0" layoutY="367.0" text="Роли:"/>
+   <Label fx:id="rolesLabel" layoutX="61.0" layoutY="367.0" text="PLACEHOLDER"/>
+   <Button fx:id="startButton" disable="true" layoutX="589.0" layoutY="362.0" mnemonicParsing="false"
+           onAction="#onStartPress" prefHeight="78.0" prefWidth="196.0" text="Начать">
+      <font>
+         <Font size="22.0"/>
+      </font>
+   </Button>
 </AnchorPane>

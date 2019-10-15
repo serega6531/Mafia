@@ -122,16 +122,22 @@ public class GameController {
 
     private void voteResultsListener(VoteResultsPacket packet) {
         for (int player = 0; player < packet.getVotesForPlayers().length; player++) {
-            List<String> texts = Arrays.asList(
-                    "За ", currentSession.getPlayers().get(player), " - ",
-                    String.valueOf(packet.getVotesForPlayers()[player]), " голосов");
-            List<String> colors = Arrays.asList("black", "blue", "black", "blue", "black");
-            appendColoredText(texts, colors);
+            if (packet.getVotesForPlayers()[player] > 0) {
+                List<String> texts = Arrays.asList(
+                        "За ", currentSession.getPlayers().get(player), " - ",
+                        String.valueOf(packet.getVotesForPlayers()[player]), " голосов");
+                List<String> colors = Arrays.asList("black", "blue", "black", "blue", "black");
+                appendColoredText(texts, colors);
+            }
         }
     }
 
     private void playerDiedListener(PlayerDiedPacket packet) {
-        Platform.runLater(() -> playerControllers[packet.getPlayerIndex()].setDeathReason(packet.getReason()));
+        Platform.runLater(() -> {
+            final PlayerBoxController controller = playerControllers[packet.getPlayerIndex()];
+            controller.setDeathReason(packet.getReason());
+            controller.setKnownRole(packet.getRole());
+        });
     }
 
     private void appendColoredText(List<String> textParts, List<String> colors) {

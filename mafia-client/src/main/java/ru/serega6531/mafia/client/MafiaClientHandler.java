@@ -10,6 +10,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import ru.serega6531.mafia.AuthData;
 import ru.serega6531.mafia.GameLobby;
+import ru.serega6531.mafia.client.controllers.WinScreenController;
 import ru.serega6531.mafia.enums.LobbyUpdateType;
 import ru.serega6531.mafia.packets.MafiaPacket;
 import ru.serega6531.mafia.packets.server.*;
@@ -92,6 +93,18 @@ public class MafiaClientHandler extends ChannelInboundHandlerAdapter {
                         startedPacket.getKnownRoles()));
 
                 Parent root = FXMLLoader.load(getClass().getResource("/game.fxml"));
+                final Stage primaryStage = MafiaClient.getPrimaryStage();
+                Scene scene = new Scene(root);
+
+                Platform.runLater(() -> primaryStage.setScene(scene));
+            }
+        } else if (packet instanceof GameEndedPacket) {
+            if (MafiaClient.getCurrentSession() != null) {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/results.fxml"));
+                final GameEndedPacket gameEndedPacket = (GameEndedPacket) packet;
+                Parent root = loader.load();
+                final WinScreenController controller = loader.getController();
+                controller.init(gameEndedPacket.getAllRoles(), gameEndedPacket.getReason());
                 final Stage primaryStage = MafiaClient.getPrimaryStage();
                 Scene scene = new Scene(root);
 

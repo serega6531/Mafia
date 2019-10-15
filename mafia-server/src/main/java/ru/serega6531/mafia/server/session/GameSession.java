@@ -2,6 +2,7 @@ package ru.serega6531.mafia.server.session;
 
 import io.netty.channel.group.ChannelGroup;
 import lombok.Getter;
+import ru.serega6531.mafia.RoleInfo;
 import ru.serega6531.mafia.SessionInitialParameters;
 import ru.serega6531.mafia.enums.Team;
 import ru.serega6531.mafia.packets.server.*;
@@ -28,6 +29,7 @@ public class GameSession extends TimerTask {
     private final Timer timer;
 
     private int stageTimeLeft = 0;
+    private boolean gameEnded = false;
 
     private Integer playerToKillAtNight = null;
 
@@ -82,9 +84,6 @@ public class GameSession extends TimerTask {
 
             System.out.printf("[%d] Началась стадия %s\n", id, nextStage.getClass().getSimpleName());
 
-            getAllPlayersChannelGroup().writeAndFlush(
-                    new StageChangePacket(nextStage));
-
             if (nextStage.messageAtStart() != null) {
                 allPlayersChannelGroup.writeAndFlush(
                         new InformationMessagePacket(nextStage.messageAtStart()));
@@ -99,7 +98,7 @@ public class GameSession extends TimerTask {
                 System.out.printf("[%d] Убит игрок %s (%s)\n", id, killed.getName(), killed.getRole().getRoleName());
                 allPlayersChannelGroup.write(new InformationMessagePacket(
                         "Этой ночью погиб " + killed.getVisibleName()));
-                allPlayersChannelGroup.writeAndFlush(new PlayerDiedPacket(playerToKillAtNight, "Застрелен"));
+                allPlayersChannelGroup.writeAndFlush(new PlayerDiedPacket(playerToKillAtNight, killed.getRole(), "Застрелен"));
                 killed.setAlive(false);
                 killed.getChannel().writeAndFlush(new InformationMessagePacket("Вас убили и вы выбыли из игры"));
                 checkForWin(killed);
@@ -184,7 +183,7 @@ public class GameSession extends TimerTask {
         System.out.printf("[%d] Посажен игрок %s (%s)\n", id, player.getName(), player.getRole().getRoleName());
         player.getChannel().writeAndFlush(new InformationMessagePacket("Вас посадили и вы выбыли из игры"));
         allPlayersChannelGroup.write(new InformationMessagePacket("Посажен " + player.getVisibleName()));
-        allPlayersChannelGroup.writeAndFlush(new PlayerDiedPacket(playerIndex, "Посажен"));
+        allPlayersChannelGroup.writeAndFlush(new PlayerDiedPacket(playerIndex, player.getRole(), "Посажен"));
 
         checkForWin(player);
     }
@@ -201,15 +200,23 @@ public class GameSession extends TimerTask {
     private void checkForWin(GamePlayer killedPlayer) {
         if (killedPlayer.getTeam() != Team.MAFIA && checkForMafiaWin()) {
             System.out.printf("[%d] Победа мафии\n", id);
-            allPlayersChannelGroup.writeAndFlush(new InformationMessagePacket("Победа мафии (TODO)"));
+            allPlayersChannelGroup.writeAndFlush(new GameEndedPacket(getAllRoles(), GameEndedPacket.Reason.MAFIA_WON));
+            gameEnded = true;
         } else if (killedPlayer.getTeam() == Team.MAFIA && checkForInnocentsWin()) {
             System.out.printf("[%d] Победа мирных\n", id);
-            allPlayersChannelGroup.writeAndFlush(new InformationMessagePacket("Победа мирных (TODO)"));
+            allPlayersChannelGroup.writeAndFlush(new GameEndedPacket(getAllRoles(), GameEndedPacket.Reason.CITIZENS_WON));
+            gameEnded = true;
         }
     }
 
     public void handleChatMessage(GamePlayer player, String message) {
         GameStage stage = stages.getCurrentStage();
+
+        if(gameEnded) {
+            ChatMessagePacket outPacket = new ChatMessagePacket(player.getNumber(), message, ChatMessagePacket.ChatChannel.GLOBAL);
+            allPlayersChannelGroup.writeAndFlush(outPacket);
+            return;
+        }
 
         if (!player.isAlive()) {
             ChatMessagePacket outPacket = new ChatMessagePacket(player.getNumber(), message, ChatMessagePacket.ChatChannel.DEAD);
@@ -235,14 +242,14 @@ public class GameSession extends TimerTask {
     public void handleVote(GamePlayer player, int vote) throws MafiaErrorMessageException {
         final GameStage currentStage = stages.getCurrentStage();
 
-        if(!player.isAlive()) {
+        if (!player.isAlive()) {
             throw new MafiaErrorMessageException("Вы не можете голосовать, когда мертвы");
         }
 
         if (currentStage instanceof DayVoteStage) {
             System.out.printf("[%d] %s проголосовал за %d\n", id, player.getName(), vote);
             ((DayVoteStage) currentStage).getVotes().put(player.getName(), vote);
-        } else if(currentStage instanceof MafiaVoteStage &&
+        } else if (currentStage instanceof MafiaVoteStage &&
                 player.getTeam() == Team.MAFIA) {
             System.out.printf("[%d] %s проголосовал за %d\n", id, player.getName(), vote);
             ((MafiaVoteStage) currentStage).getVotes().put(player.getName(), vote);
@@ -310,6 +317,12 @@ public class GameSession extends TimerTask {
         return Arrays.stream(players)
                 .filter(GamePlayer::isAlive)
                 .map(GamePlayer::getNumber)
+                .collect(Collectors.toList());
+    }
+
+    private List<RoleInfo> getAllRoles() {
+        return Arrays.stream(players)
+                .map(p -> new RoleInfo(p.getNumber(), p.getRole()))
                 .collect(Collectors.toList());
     }
 

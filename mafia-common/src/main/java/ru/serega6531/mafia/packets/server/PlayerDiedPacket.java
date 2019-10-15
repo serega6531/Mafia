@@ -3,6 +3,7 @@ package ru.serega6531.mafia.packets.server;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import ru.serega6531.mafia.enums.Role;
 import ru.serega6531.mafia.packets.MafiaPacket;
 
 @EqualsAndHashCode(callSuper = true)
@@ -11,6 +12,7 @@ import ru.serega6531.mafia.packets.MafiaPacket;
 public class PlayerDiedPacket extends MafiaPacket {
 
     private int playerIndex;
+    private Role role;
     private String reason;
 
 }
