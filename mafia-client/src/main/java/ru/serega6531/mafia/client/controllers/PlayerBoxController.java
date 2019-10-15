@@ -6,6 +6,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
 import lombok.Getter;
 import lombok.Setter;
 import ru.serega6531.mafia.client.MafiaClient;
@@ -22,6 +23,9 @@ public class PlayerBoxController {
     private final boolean isCurrentPlayer;
 
     private Role knownRole;
+
+    @FXML
+    private AnchorPane playerBoxPane;
 
     @FXML
     private Label playerNameLabel;
@@ -48,6 +52,10 @@ public class PlayerBoxController {
     @FXML
     public void initialize() {
         playerNameLabel.setText(playerName);
+
+        if (isCurrentPlayer) {
+            playerBoxPane.setStyle("-fx-border-color: #ebb00e; -fx-border-width: 2;");
+        }
     }
 
     public void setKnownRole(Role knownRole) {

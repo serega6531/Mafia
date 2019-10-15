@@ -88,7 +88,15 @@ public class GameController {
         final int playerNum = packet.getPlayerNum();
         String player = currentSession.getPlayers().get(playerNum);
 
-        appendColoredText(Arrays.asList(player, ": ", message), Arrays.asList("red", "black", "blue"));
+        String textColor;
+
+        switch (packet.getChatChannel()) {
+            case MAFIA: textColor = "red"; break;
+            case DEAD: textColor = "grey"; break;
+            default: textColor = "blue"; break;
+        }
+
+        appendColoredText(Arrays.asList(player, ": ", message), Arrays.asList("red", "black", textColor));
     }
 
     private void informationMessageListener(InformationMessagePacket packet) {
