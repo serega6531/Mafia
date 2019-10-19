@@ -35,7 +35,16 @@ public class WinScreenController {
     @FXML
     public void initialize() {
         currentSession = MafiaClient.getCurrentSession();
+        MafiaClient.setCurrentSession(null);
+
         MafiaClient.setChatMessageConsumer(this::chatMessageListener);
+        MafiaClient.setInformationMessageConsumer(null);
+        MafiaClient.setCountdownConsumer(null);
+        MafiaClient.setStartVotingListener(null);
+        MafiaClient.setStopVotingListener(null);
+        MafiaClient.setVoteResultsListener(null);
+        MafiaClient.setPlayerDiedListener(null);
+        MafiaClient.setRoleRevealListener(null);
     }
 
     public void init(List<RoleInfo> allRoles, GameEndedPacket.Reason gameEndedReason) {
@@ -55,6 +64,7 @@ public class WinScreenController {
     }
 
     public void onQuitButtonClick(ActionEvent event) {
+        MafiaClient.setChatMessageConsumer(null);
         //TODO
     }
 

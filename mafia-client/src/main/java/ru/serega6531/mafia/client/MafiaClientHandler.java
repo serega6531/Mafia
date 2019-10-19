@@ -135,6 +135,11 @@ public class MafiaClientHandler extends ChannelInboundHandlerAdapter {
             if (listener != null) {
                 listener.accept((PlayerDiedPacket) packet);
             }
+        } else if (packet instanceof RoleRevealPacket) {
+            final Consumer<RoleRevealPacket> listener = MafiaClient.getRoleRevealListener();
+            if(listener != null) {
+                listener.accept((RoleRevealPacket) packet);
+            }
         }
     }
 

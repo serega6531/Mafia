@@ -8,10 +8,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 import org.fxmisc.richtext.InlineCssTextArea;
-import org.fxmisc.richtext.model.ReadOnlyStyledDocumentBuilder;
-import org.fxmisc.richtext.model.SegmentOps;
-import org.fxmisc.richtext.model.StyleSpan;
-import org.fxmisc.richtext.model.StyleSpansBuilder;
+import org.fxmisc.richtext.model.*;
 import ru.serega6531.mafia.RoleInfo;
 import ru.serega6531.mafia.client.LocalSession;
 import ru.serega6531.mafia.client.MafiaClient;
@@ -55,6 +52,7 @@ public class GameController {
         MafiaClient.setStopVotingListener(this::stopVotingListener);
         MafiaClient.setVoteResultsListener(this::voteResultsListener);
         MafiaClient.setPlayerDiedListener(this::playerDiedListener);
+        MafiaClient.setRoleRevealListener(this::roleRevealListener);
         MafiaClient.setLobbyUpdateConsumer(null);
 
         final Map<Integer, Role> roles = currentSession.getKnownRoles().stream()
@@ -144,6 +142,12 @@ public class GameController {
         Platform.runLater(() -> {
             final PlayerBoxController controller = playerControllers[packet.getPlayerIndex()];
             controller.setDeathReason(packet.getReason());
+        });
+    }
+
+    private void roleRevealListener(RoleRevealPacket packet) {
+        Platform.runLater(() -> {
+            final PlayerBoxController controller = playerControllers[packet.getPlayerIndex()];
             controller.setKnownRole(packet.getRole());
         });
     }
@@ -161,9 +165,10 @@ public class GameController {
                             text.length() + (i == textParts.size() - 1 ? 1 : 0)));
         }
 
-        Platform.runLater(() -> chatTextBox.append(
-                new ReadOnlyStyledDocumentBuilder<String, String, String>(SegmentOps.styledTextOps(), null)
-                        .addParagraph(fullText, stylesBuilder.create())
-                        .build()));
+        final ReadOnlyStyledDocument<String, String, String> document = new ReadOnlyStyledDocumentBuilder<String, String, String>(SegmentOps.styledTextOps(), null)
+                .addParagraph(fullText, stylesBuilder.create())
+                .build();
+
+        Platform.runLater(() -> chatTextBox.append(document));
     }
 }

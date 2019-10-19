@@ -147,7 +147,12 @@ public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
                             gp.getKnownRoles()));
                 }
             } else if (packet instanceof ClientChatMessagePacket) {
-                final String message = ((ClientChatMessagePacket) packet).getMessage();
+                String message = ((ClientChatMessagePacket) packet).getMessage();
+                message = message.trim();
+
+                if(message.isEmpty()) {
+                    return;
+                }
 
                 final GameLobby lobby = sessionsService.getLobbyByPlayer(player);
                 if (lobby != null) {

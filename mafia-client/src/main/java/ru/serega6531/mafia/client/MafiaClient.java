@@ -84,6 +84,10 @@ public class MafiaClient extends Application {
     @Setter
     private static Consumer<PlayerDiedPacket> playerDiedListener;
 
+    @Getter
+    @Setter
+    private static Consumer<RoleRevealPacket> roleRevealListener;
+
     private static final EventLoopGroup workerGroup = new NioEventLoopGroup();
 
     public static void main(String[] args) {

@@ -98,7 +98,8 @@ public class GameSession extends TimerTask {
                 System.out.printf("[%d] Убит игрок %s (%s)\n", id, killed.getName(), killed.getRole().getRoleName());
                 allPlayersChannelGroup.write(new InformationMessagePacket(
                         "Этой ночью погиб " + killed.getVisibleName()));
-                allPlayersChannelGroup.writeAndFlush(new PlayerDiedPacket(playerToKillAtNight, killed.getRole(), "Застрелен"));
+                allPlayersChannelGroup.write(new PlayerDiedPacket(playerToKillAtNight, "Застрелен"));
+                allPlayersChannelGroup.writeAndFlush(new RoleRevealPacket(playerToKillAtNight, killed.getRole()));
                 killed.setAlive(false);
                 killed.getChannel().writeAndFlush(new InformationMessagePacket("Вас убили и вы выбыли из игры"));
                 checkForWin(killed);
@@ -183,7 +184,8 @@ public class GameSession extends TimerTask {
         System.out.printf("[%d] Посажен игрок %s (%s)\n", id, player.getName(), player.getRole().getRoleName());
         player.getChannel().writeAndFlush(new InformationMessagePacket("Вас посадили и вы выбыли из игры"));
         allPlayersChannelGroup.write(new InformationMessagePacket("Посажен " + player.getVisibleName()));
-        allPlayersChannelGroup.writeAndFlush(new PlayerDiedPacket(playerIndex, player.getRole(), "Посажен"));
+        allPlayersChannelGroup.write(new PlayerDiedPacket(playerIndex, "Посажен"));
+        allPlayersChannelGroup.writeAndFlush(new RoleRevealPacket(playerIndex, player.getRole()));
 
         checkForWin(player);
     }
