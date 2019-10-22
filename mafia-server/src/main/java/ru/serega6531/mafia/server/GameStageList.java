@@ -28,6 +28,10 @@ public class GameStageList {
         return currentStage;
     }
 
+    public void insertNext(GameStage stage) {
+        internalList.add(position, stage);
+    }
+
     public void remove(Class<? extends GameStage> cl) {
         for (int i = 0; i < internalList.size(); i++) {
             GameStage internalStage = internalList.get(i);

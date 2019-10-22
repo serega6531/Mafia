@@ -77,6 +77,17 @@ public class GameSession extends TimerTask {
             } else if (prevStage instanceof MafiaVoteStage) {
                 processMafiaVotes(((MafiaVoteStage) prevStage).getVotes());
                 allPlayersChannelGroup.writeAndFlush(new StopVotingPacket());
+            } else if (prevStage instanceof LastWordsStage) {
+                int playerIndex = ((LastWordsStage) prevStage).getPlayerNum();
+                GamePlayer player = players[playerIndex];
+                player.setAlive(false);
+                System.out.printf("[%d] Посажен игрок %s (%s)\n", id, player.getName(), player.getRole().getRoleName());
+                player.getChannel().writeAndFlush(new InformationMessagePacket("Вас посадили и вы выбыли из игры"));
+                allPlayersChannelGroup.write(new InformationMessagePacket("Посажен " + player.getVisibleName()));
+                allPlayersChannelGroup.write(new PlayerDiedPacket(playerIndex, "Посажен"));
+                allPlayersChannelGroup.writeAndFlush(new RoleRevealPacket(playerIndex, player.getRole()));
+
+                checkForWin(player);
             }
 
             final GameStage nextStage = stages.next();
@@ -179,15 +190,7 @@ public class GameSession extends TimerTask {
     }
 
     private void jail(int playerIndex) {
-        GamePlayer player = players[playerIndex];
-        player.setAlive(false);
-        System.out.printf("[%d] Посажен игрок %s (%s)\n", id, player.getName(), player.getRole().getRoleName());
-        player.getChannel().writeAndFlush(new InformationMessagePacket("Вас посадили и вы выбыли из игры"));
-        allPlayersChannelGroup.write(new InformationMessagePacket("Посажен " + player.getVisibleName()));
-        allPlayersChannelGroup.write(new PlayerDiedPacket(playerIndex, "Посажен"));
-        allPlayersChannelGroup.writeAndFlush(new RoleRevealPacket(playerIndex, player.getRole()));
-
-        checkForWin(player);
+        stages.insertNext(new LastWordsStage(playerIndex, players[playerIndex].getVisibleName()));
     }
 
     private void kill(int playerIndex) {
@@ -204,17 +207,19 @@ public class GameSession extends TimerTask {
             System.out.printf("[%d] Победа мафии\n", id);
             allPlayersChannelGroup.writeAndFlush(new GameEndedPacket(getAllRoles(), GameEndedPacket.Reason.MAFIA_WON));
             gameEnded = true;
+            timer.cancel();
         } else if (killedPlayer.getTeam() == Team.MAFIA && checkForInnocentsWin()) {
             System.out.printf("[%d] Победа мирных\n", id);
             allPlayersChannelGroup.writeAndFlush(new GameEndedPacket(getAllRoles(), GameEndedPacket.Reason.CITIZENS_WON));
             gameEnded = true;
+            timer.cancel();
         }
     }
 
     public void handleChatMessage(GamePlayer player, String message) {
         GameStage stage = stages.getCurrentStage();
 
-        if(gameEnded) {
+        if (gameEnded) {
             ChatMessagePacket outPacket = new ChatMessagePacket(player.getNumber(), message, ChatMessagePacket.ChatChannel.GLOBAL);
             allPlayersChannelGroup.writeAndFlush(outPacket);
             return;
@@ -235,6 +240,11 @@ public class GameSession extends TimerTask {
                     .filter(p -> p.getTeam() == Team.MAFIA) // отправлять ли мертвым мирным?
                     .map(GamePlayer::getChannel)
                     .forEach(ch -> ch.writeAndFlush(outPacket));
+        } else if (stage instanceof LastWordsStage) {
+            if(((LastWordsStage) stage).getPlayerNum() == player.getNumber()) {
+                ChatMessagePacket outPacket = new ChatMessagePacket(player.getNumber(), message, ChatMessagePacket.ChatChannel.GLOBAL);
+                allPlayersChannelGroup.writeAndFlush(outPacket);
+            }
         } else {
             ChatMessagePacket outPacket = new ChatMessagePacket(player.getNumber(), message, ChatMessagePacket.ChatChannel.GLOBAL);
             allPlayersChannelGroup.writeAndFlush(outPacket);
