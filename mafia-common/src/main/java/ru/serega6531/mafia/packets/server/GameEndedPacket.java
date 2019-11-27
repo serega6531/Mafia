@@ -14,6 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 public class GameEndedPacket extends MafiaPacket {
 
+    private String[] realNames;
     private List<RoleInfo> allRoles;
     private Reason reason;
 

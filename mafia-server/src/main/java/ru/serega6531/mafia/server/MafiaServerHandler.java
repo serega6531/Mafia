@@ -7,6 +7,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.group.ChannelGroup;
+import lombok.Getter;
 import ru.serega6531.mafia.AuthData;
 import ru.serega6531.mafia.GameLobby;
 import ru.serega6531.mafia.SessionInitialParameters;
@@ -24,9 +25,10 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
-@ChannelHandler.Sharable  // нужно следить на race condition
+@ChannelHandler.Sharable  // нужно следить за race condition
 public class MafiaServerHandler extends ChannelInboundHandlerAdapter {
 
+    @Getter
     private ChannelGroup allClients;
     private BiMap<String, Channel> channelsForPlayers = HashBiMap.create();
 

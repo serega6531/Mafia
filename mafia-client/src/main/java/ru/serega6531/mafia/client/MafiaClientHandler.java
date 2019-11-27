@@ -104,7 +104,7 @@ public class MafiaClientHandler extends ChannelInboundHandlerAdapter {
                 final GameEndedPacket gameEndedPacket = (GameEndedPacket) packet;
                 Parent root = loader.load();
                 final WinScreenController controller = loader.getController();
-                controller.init(gameEndedPacket.getAllRoles(), gameEndedPacket.getReason());
+                controller.init(gameEndedPacket.getRealNames(), gameEndedPacket.getAllRoles(), gameEndedPacket.getReason());
                 final Stage primaryStage = MafiaClient.getPrimaryStage();
                 Scene scene = new Scene(root);
 

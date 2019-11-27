@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 @Getter
 public class GameSession extends TimerTask {
 
+    private final SessionsService sessionsService;
+
     private final int id;
     private final ChannelGroup allPlayersChannelGroup;
     private String creator;
@@ -33,8 +35,9 @@ public class GameSession extends TimerTask {
 
     private Integer playerToKillAtNight = null;
 
-    public GameSession(int id, ChannelGroup allPlayersChannelGroup, String creator,
+    public GameSession(SessionsService sessionsService, int id, ChannelGroup allPlayersChannelGroup, String creator,
                        SessionInitialParameters parameters, GamePlayer[] players) {
+        this.sessionsService = sessionsService;
         this.id = id;
         this.allPlayersChannelGroup = allPlayersChannelGroup;
         this.creator = creator;
@@ -205,25 +208,21 @@ public class GameSession extends TimerTask {
     private void checkForWin(GamePlayer killedPlayer) {
         if (killedPlayer.getTeam() != Team.MAFIA && checkForMafiaWin()) {
             System.out.printf("[%d] Победа мафии\n", id);
-            allPlayersChannelGroup.writeAndFlush(new GameEndedPacket(getAllRoles(), GameEndedPacket.Reason.MAFIA_WON));
+            allPlayersChannelGroup.writeAndFlush(new GameEndedPacket(getAllPlayersNames(), getAllRoles(), GameEndedPacket.Reason.MAFIA_WON));
             gameEnded = true;
+            sessionsService.stopSession(this);
             timer.cancel();
         } else if (killedPlayer.getTeam() == Team.MAFIA && checkForInnocentsWin()) {
             System.out.printf("[%d] Победа мирных\n", id);
-            allPlayersChannelGroup.writeAndFlush(new GameEndedPacket(getAllRoles(), GameEndedPacket.Reason.CITIZENS_WON));
+            allPlayersChannelGroup.writeAndFlush(new GameEndedPacket(getAllPlayersNames(), getAllRoles(), GameEndedPacket.Reason.CITIZENS_WON));
             gameEnded = true;
+            sessionsService.stopSession(this);
             timer.cancel();
         }
     }
 
     public void handleChatMessage(GamePlayer player, String message) {
         GameStage stage = stages.getCurrentStage();
-
-        if (gameEnded) {
-            ChatMessagePacket outPacket = new ChatMessagePacket(player.getNumber(), message, ChatMessagePacket.ChatChannel.GLOBAL);
-            allPlayersChannelGroup.writeAndFlush(outPacket);
-            return;
-        }
 
         if (!player.isAlive()) {
             ChatMessagePacket outPacket = new ChatMessagePacket(player.getNumber(), message, ChatMessagePacket.ChatChannel.DEAD);
@@ -245,7 +244,7 @@ public class GameSession extends TimerTask {
                 ChatMessagePacket outPacket = new ChatMessagePacket(player.getNumber(), message, ChatMessagePacket.ChatChannel.GLOBAL);
                 allPlayersChannelGroup.writeAndFlush(outPacket);
             }
-        } else {
+        } else if(stage instanceof InitialDiscussionStage || stage instanceof DayDiscussionStage) {
             ChatMessagePacket outPacket = new ChatMessagePacket(player.getNumber(), message, ChatMessagePacket.ChatChannel.GLOBAL);
             allPlayersChannelGroup.writeAndFlush(outPacket);
         }
@@ -330,6 +329,12 @@ public class GameSession extends TimerTask {
                 .filter(GamePlayer::isAlive)
                 .map(GamePlayer::getNumber)
                 .collect(Collectors.toList());
+    }
+
+    private String[] getAllPlayersNames() {
+        return Arrays.stream(players)
+                .map(GamePlayer::getName)
+                .toArray(String[]::new);
     }
 
     private List<RoleInfo> getAllRoles() {

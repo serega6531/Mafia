@@ -100,27 +100,6 @@ public class MafiaClient extends Application {
 
         Parent root = FXMLLoader.load(getClass().getResource("/login.fxml"));
 
-        //Testing:
-//        authData = new AuthData("serega6531", new byte[0]);
-//
-//        Map<Role, Integer> roles = new HashMap<>();
-//        roles.put(Role.MAFIA, 2);
-//        roles.put(Role.CITIZEN, 3);
-//
-//        final SessionInitialParameters parameters = SessionInitialParameters.builder()
-//                .playersCount(5)
-//                .rolesCount(roles)
-//                .build();
-//
-//        currentSession = new LocalSession(1, parameters, 0,
-//                Arrays.asList("serega6531", "test1", "test2", "test3", "test4"),
-//                Arrays.asList(
-//                        new RoleInfo(0, Role.MAFIA),
-//                        new RoleInfo(2, Role.MAFIA),
-//                        new RoleInfo(3, Role.CITIZEN)));
-//        Parent root = FXMLLoader.load(getClass().getResource("/game.fxml"));
-        //End testing
-
         Scene scene = new Scene(root);
         primaryStage.setTitle("Мафия");
         primaryStage.setScene(scene);

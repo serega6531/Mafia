@@ -7,8 +7,10 @@ import io.netty.util.concurrent.GlobalEventExecutor;
 import ru.serega6531.mafia.GameLobby;
 import ru.serega6531.mafia.RoleInfo;
 import ru.serega6531.mafia.SessionInitialParameters;
+import ru.serega6531.mafia.enums.LobbyUpdateType;
 import ru.serega6531.mafia.enums.Role;
 import ru.serega6531.mafia.enums.Team;
+import ru.serega6531.mafia.packets.server.LobbyUpdatedPacket;
 import ru.serega6531.mafia.server.GamePlayer;
 import ru.serega6531.mafia.server.MafiaServerHandler;
 import ru.serega6531.mafia.server.exceptions.MafiaErrorMessageException;
@@ -111,7 +113,7 @@ public class SessionsService {
         }
 
         final ChannelGroup channelGroup = channelGroups.get(lobby.getId());
-        GameSession session = new GameSession(lobby.getId(), channelGroup, lobby.getCreator(), lobby.getParameters(), gamePlayers.toArray(new GamePlayer[0]));
+        GameSession session = new GameSession(this, lobby.getId(), channelGroup, lobby.getCreator(), lobby.getParameters(), gamePlayers.toArray(new GamePlayer[0]));
 
         System.out.printf("[%d] Игра началась: %s\n", session.getId(),
                 gamePlayers.stream()
@@ -128,7 +130,18 @@ public class SessionsService {
             sessionsByPlayer.put(p, session);
         }
 
+        serverHandler.getAllClients().writeAndFlush(new LobbyUpdatedPacket(LobbyUpdateType.LOBBY_REMOVED, null, lobby));
+
         return session;
+    }
+
+    public void stopSession(GameSession session) {
+        for (GamePlayer player : session.getPlayers()) {
+            sessionsByCreator.remove(player.getName());
+            sessionsByPlayer.remove(player.getName());
+        }
+
+        sessionsById.remove(session.getId());
     }
 
     public GameLobby joinLobby(String player, int id, Channel channel) throws MafiaErrorMessageException {

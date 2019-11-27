@@ -84,8 +84,10 @@ public class LobbyController {
                     });
                     break;
                 case LOBBY_REMOVED:
-                    final Stage primaryStage = MafiaClient.getPrimaryStage();
-                    primaryStage.setScene(MafiaClient.getLobbiesListScene());
+                    Platform.runLater(() -> {
+                        final Stage primaryStage = MafiaClient.getPrimaryStage();
+                        primaryStage.setScene(MafiaClient.getLobbiesListScene());
+                    });
                     break;
                 case CREATOR_CHANGED:
                     Platform.runLater(() -> {
